@@ -30,7 +30,7 @@ Ce repository est MacOSX compliant.
 ### Assembleur
 
 ```
-nasm -f macho64 -Wall -Werror -Wextra ft_strlen.s ft_strcmp.s ft_strcpy.s ft_strdup.s ft_write.s ft_read.s
+nasm -f macho64 -Wall -Werror ft_strlen.s ft_strcmp.s ft_strcpy.s ft_strdup.s ft_write.s ft_read.s
 ```
 
 ### Linker
@@ -71,7 +71,7 @@ Il existe 2 syntaxes principales : celle de Intel et celle de AT&T. Nous devons 
 En fait, ce serait trop facile de rendre le projet en syntaxe AT&T : le compilateur `clang` l'utilise pour
 produire les instructions machines issues d'un code source d'un langage compilé. Il suffirait de reprendre sa
 libft, l'adapter au sujet et produire les fichiers assembleur attendus de la façon suivante : `gcc -S ft_strlen.c ft_strcmp.c ft_strcpy.c ft_strdup.c ft_write.c ft_read.c`.   
-  >  *Spoiler alert: On ne peut pas écrire `ft_write.c` sans utiliser la fonction `write`. Ce qui n'est pas autorisé par le sujet - donc c'est interdit. De plus, ça se lit immédiatement dans le code assembleur que `write` est appelée. Il faut trouver une astuce pour passer directement par les registres et faire intervenir le bon sys_call. C'est également valable pour read.*
+  >  *Spoiler alert: On ne peut pas écrire `ft_write.c` sans utiliser la fonction `write`. Ce qui n'est pas autorisé par le sujet - donc c'est interdit. De plus, ça se lit immédiatement dans le code assembleur que `write` est appelée. Il faut trouver une astuce pour passer directement par les registres et faire intervenir le bon sys_call. C'est également valable pour read.*  
   >  *J'en déduis que c'est certainement pour cette raison qu'il n'y a ni de `write.c` ni `read.c` dans le kernel
     Apple, mais seulement `write.s` et `read.s`.*
 
@@ -81,7 +81,7 @@ Il y a plusieurs différences majeures, mais les 2 principales à connaître, c'
 les noms de variables, et l'inversion des opérandes de *source* et de *destination* par rapport à la syntaxe
 Intel.
 
-Donc un code assembleur avec du **%** disséminé, c'est de la syntaxe **AT&T** qui est employée. Donc c'est un fail pour non respect des consignes du sujet.
+Donc un code assembleur avec du **%** disséminé, c'est très certainement de la syntaxe **AT&T** qui est employée. Donc c'est un fail pour non respect des consignes du sujet.
 
 ## Les registres
 
@@ -187,7 +187,7 @@ nombre est placé dans le registre AL.
 
 La valeur de retour est stockée dans le registre RAX, et RDX si RAX est trop petit.
 
-Chaque fonction contient un prologue, au début, et un epilogue à la fin.  
+Chaque fonction contient un prologue, au début, et un épilogue à la fin.  
 Le prologue configure le cadre de pile en sauvegardant RBP sur la stack, puis en copiant l'adresse de RSP dans RBP. RBP pointe sur le haut de la stack 
 
 ```asm
@@ -219,7 +219,10 @@ quelques différences près.
 
 Vous trouverez ces informations précisément dans l'ABI AMD64.
 
-## Documentation très utile
+## Documentations très utiles
+
+### Websites
+
 [Application Binary Interface AMD64](https://gitlab.com/x86-psABIs/x86-64-ABI/-/jobs/artifacts/master/raw/x86-64-ABI/abi.pdf?job=build)  
 [ASM Tutor](https://asmtutor.com/)  
 [Recap cs.washington.edu](https://courses.cs.washington.edu/courses/cse378/10au/sections/Section1_recap.pdf)  
@@ -229,6 +232,14 @@ Vous trouverez ces informations précisément dans l'ABI AMD64.
 [Syscalls MacOSX](https://opensource.apple.com/source/xnu/xnu-1504.3.12/bsd/kern/syscalls.master)  
 
 ### Livres
-**Assembly Language Step by Step - *Jeff Duntemann*** => Ressource inestimable. Même si le livre traite de CPU
-32-bits, toutes les explications sur la gestion de la mémoire sont claires, détaillées, évidentes. À moins que je n'ai de gros soucis de traduction, toutes les infos de ce README sont majoritairement issues de ce livre.  
+
+**Assembly Language Step by Step - *Jeff Duntemann***  
+Ressource inestimable. Même si le livre traite de CPU
+32-bits, toutes les explications sur la gestion de la mémoire sont claires, détaillées, évidentes.  
+À moins que je n'ai eu de gros soucis de traduction, toutes les infos de ce README sont majoritairement issues de ce livre.  
 L'auteur utilise Linux et Nasm pour illustrer ses propos. Ce n'est pas très grave si les explications concernent le modèle 32-bits, car tout ce que nous avons à faire pour **LibASM**, et tout ce que ce livre peut nous enseigner est complètement transposable sur du 64 bits. Le reste des subtilités concerne les ingénieurs CPUs...
+
+**Low-Level Programming C, Assembly, and Program Execution on Intel 64 Architecture - *Igor Zhirkov***  
+Ce livre aussi est d'une grande aide. Il emmène dans le bain directement, donc il vaut mieux avoir compris comment
+fonctionne la mémoire d'un CPU avant de le consulter. En revanche, il est illustré de nombreux exemples pour CPU
+64-bits, ce qui est fort appréciable. L'auteur aussi utilise Linux, Nasm et gcc.
