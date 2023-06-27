@@ -85,11 +85,11 @@ Donc un code assembleur avec du **%** disséminé, c'est très certainement de l
 
 ## Les registres
 
-### AX, BX, CX, DX
-
 Ce sont des emplacements mémoires situés directement dans le CPU, dans lesquels on va placer les adresses
 mémoires des datas qu'on désire manipuler. Je les amalgame complètement aux pointeurs qu'on utilise en C/C++.  
 Pour un CPU de la famille x86-64 (x86 pour indiquer que ces CPUs sont issus des familles de CPU 8086; 64 pour indiquer le mode en 64 bits), il existe 16 registres généraux d'une taille de 64 bits chacun.
+
+### AX, BX, CX, DX
 
 Les 4 registres `RAX`, `RBX`, `RCX`, `RDX` sont chacun subdivisés en 4 parties. C'est surtout une question de
 rétrocompabilité. Il faut pouvoir faire tourner les programmes codés sur 8 bits, 16 bits, 32 bits.  
@@ -118,9 +118,12 @@ On ne peut juste pas les adresser dans leurs parties hautes ou basses. *Après v
 stack, 
 et l'adresse de la base du cadre de pile *(qui pourrait être l'adresse de bas de la stack, même si peu
         probable, mais ne doit pas être confondu avec)*.
-La Stack est un espace mémoire flexible et écrasable, située quasiment tout en haut du segment de mémoire
+
+#### La Stack
+
+La Stack est un espace mémoire flexible et écrasable, de type LIFO, située quasiment tout en haut du segment de mémoire
 accordé au programme. Elle évolue vers le centre de ce se segment, c'est-à-dire que plus on y entrepose de
-données, plus ses adresses mémoire diminueront. Elle a un fonctionnement à l'envers qui peut en déconcerter plus d'un.  
+données, plus ses adresses mémoire diminueront. Elle a un fonctionnement à l'envers de comment on a l'habitude de concevoir une pile, qui peut en déconcerter plus d'un, mais c'est bien une pile.    
 On y trouve tout un ensemble d'éléments: `argc` et `argv[0 à argc - 1]` d'un exécutable, les variables locales
 de fonctions, les adresses de retour de fonctions, et, entre autres, les cadres de pile, *Stack Frames*.
 
