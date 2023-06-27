@@ -1,21 +1,21 @@
 # LibASM
 
-Initialement, ce projet se trouvait en début de cursus à 42 (cercle 2 ou 3, iirc). 
-Mais en 2021, ce projet est déplacé à l'extérieur du tronc commun. 
+Initialement, ce projet se trouvait en début de cursus à 42 *(cercle 2 ou 3, iirc)*.  
+Mais en 2021, ce projet est déplacé à l'extérieur du tronc commun.  
 Je trouve cela bien dommage, car malgré la difficulté du projet, il
 apporte énormément de compréhension sur le fonctionnement d'un exécutable.
 
 ## À chaque OS, son système d'assemblage
 
-J'irai même jusqu'à écrire "À chaque CPU, son jeu d'instructions machine".
-C'est une sacré pataugeoire pour s'y retrouver, entre l'assembly 8-bits, 16-bits, 32-bits et 64-bits, il n'est
-vraiment pas simple de s'y retrouver.
+Que l'on peut compléter d'un *"À chaque CPU, son jeu d'instructions machine"*.  
+Il n'est vraiment pas simple de s'y retrouver, dans ce projet, entre l'assembly 8-bits, 16-bits, 32-bits et 64-bits, .
 Surtout, que selon les différents campus, on travaille soit sur MacOSX (en voie d'extinction), soit sur OS de la
-famille Linux/Debian. Windows, aussi, bien entendu est concerné par l'assembleur.  
+famille Linux/Debian.  
+Windows, aussi, bien entendu est concerné par l'assembleur.  
 Là où il y a un CPU, il y a de l'assembleur. Sa mise en oeuvre et pratique dépend grandement de l'OS. C'est en
 quelque sorte notre intermédiaire avec le CPU.
 
-Ce repository est MacOSX compliant.
+Ce repository est *MacOSX* compliant.
 
 ## Le setup
 
@@ -67,8 +67,8 @@ passer par un registre intermédiaire.
 
 ## La syntaxe
 
-Il existe 2 syntaxes principales : celle de Intel et celle de AT&T. Nous devons utiliser la syntaxe **Intel**.
-En fait, ce serait trop facile de rendre le projet en syntaxe AT&T : le compilateur `clang` l'utilise pour
+Il existe 2 syntaxes principales : celle de **Intel** et celle de **AT&T**. Nous devons utiliser la syntaxe **Intel**.
+En fait, ce serait trop facile de rendre le projet en syntaxe **AT&T** : le compilateur `clang` l'utilise pour
 produire les instructions machines issues d'un code source d'un langage compilé. Il suffirait de reprendre sa
 libft, l'adapter au sujet et produire les fichiers assembleur attendus de la façon suivante : `gcc -S ft_strlen.c ft_strcmp.c ft_strcpy.c ft_strdup.c ft_write.c ft_read.c`.   
   >  *Spoiler alert: On ne peut pas écrire `ft_write.c` sans utiliser la fonction `write`. Ce qui n'est pas autorisé par le sujet - donc c'est interdit. De plus, ça se lit immédiatement dans le code assembleur que `write` est appelée. Il faut trouver une astuce pour passer directement par les registres et faire intervenir le bon sys_call. C'est également valable pour read.*  
@@ -145,17 +145,17 @@ registres 8 bits aux registres 16 bits.
 Ces 8 premiers bits (index 0 à 7) occupent ce qu'on appelle **la partie basse** du registre =>  ce sont les **L**ow bits.
 Les 8 nouveaux (8 à 15), eux, sont les **H**igh bits du registres, ils occupent **la partie haute** de la mémoire.  
 
-Les registres avaient alors des noms de ce genre : AX, BX, CX, DX, IP, DI, SI, BP, SP, FLAGS...  
+Les registres avaient alors des noms de ce genre : *AX, BX, CX, DX, IP, DI, SI, BP, SP, FLAGS...*  
 
 On s'est à nouveau retrouvé en manque de mémoire, et les ingénieurs ont alors décidé d'augmenter la taille des
 registres à 32 bits.  
 
 De part ce besoin de rétrocompabilité, on ne pouvait pas transformer le registre AX en un registre de 32 bits.
-On l'a donc intégré à un autre, pour obtenir un **Extended Register**. Ces nouveaux registres ont vu ce E en
-préfixe du nom du registre à étendre : EAX, EBX, ECX, EDX, EIP, EDI, ESI, EBP, ESP, EFLAGS...  
+On l'a donc intégré à un autre, pour obtenir un **Extended Register**. Ces nouveaux registres ont vu ce **E** en
+préfixe du nom du registre à étendre : *EAX, EBX, ECX, EDX, EIP, EDI, ESI, EBP, ESP, EFLAGS...*  
 
-Le passage au 64 bits emprunte la même voie et les registres sont préfixés d'un R : RAX, RBX, RCX, RDX, RIP,
-   RDI, RSI, RBP, RSP, RFLAGS.  
+Le passage au 64 bits emprunte la même voie et les registres sont préfixés d'un **R** : *RAX, RBX, RCX, RDX, RIP,
+   RDI, RSI, RBP, RSP, RFLAGS*.  
 
 Ces lettrages permettent de distinguer les registres ainsi que leurs tailles.
 
@@ -173,25 +173,24 @@ valeurs au travers un appel de fonction, il faut push sur la stack ces valeurs.
 Ce registre contient l'adresse de la prochaine instruction a exécuter. Pour les architectures x86-64, en
 général, c'est l'OS qui gère ce registre, le programmeur n'aura pas à s'en occuper.
 
-### FLAGS
+### RFLAGS
 
 C'est un registre de 64 bits. On n'utilise que les 32 premiers bits, et chaque bit, s'il n'est pas inutilisé, a
 une fonction particulière et transmet son résultat en étant levé (1) ou baissé (0).
-Par exemple, le bit CF de ce registre sera à 1 si le résultat d'une opération a une retenue.
+Par exemple, le bit **CF** de ce registre sera à 1 si le résultat d'une opération a une retenue.  
 L'instruction `cmp dst, src` effectue la différence des adresses mémoire de dst et src. Selon le résultat
-obtenu, certains bits de FLAGS seront levés ou descendus via cette instruction. L'instruction `je` à la suite, bien souvent, vérifie si la différence d'adresses vaut 0, donc si le flags ZF est levé.  
-Ce n'est pas du tout le
-programmeur qui change les états de ce registre de manière directe.  
+obtenu, certains bits de **FLAGS** seront levés ou descendus via cette instruction. L'instruction `je` à la suite, bien souvent, vérifie si la différence d'adresses vaut 0, donc si le flags **ZF** est levé.  
+Ce n'est pas du tout le programmeur qui change les états de ce registre de manière directe.  
 
 ### Fonctions
 Les paramètres de fonctions sont stockés respectivement dans les registres **RDI**, **RSI**, **RDX**, **RCX**, **R8**, et **R9**. Au-delà,
 les arguments sont envoyés sur la stack. Si la fonction a un nombre variadique d'arguments, alors ce
-nombre est placé dans le registre AL.
+nombre est placé dans le registre **AL**.
 
-La valeur de retour est stockée dans le registre RAX, et RDX si RAX est trop petit.
+La valeur de retour est stockée dans le registre **RAX**, et **RDX** si *RAX* est trop petit.
 
 Chaque fonction contient un prologue, au début, et un épilogue à la fin.  
-Le prologue configure le cadre de pile en sauvegardant RBP sur la stack, puis en copiant l'adresse de RSP dans RBP. RBP pointe sur le haut de la stack 
+Le prologue configure le cadre de pile en sauvegardant **RBP** sur la stack, puis en copiant l'adresse de **RSP** dans *RBP*. **RBP pointe sur le haut de la stack.** 
 
 ```asm
 push   rbp
@@ -216,11 +215,11 @@ quelques différences près.
 3. Les appels système sont classifié par des numéros. **Ces numéros sont propres à chaque OS.**. Lors d'un appel
    système, son numéro doit être placé dans le registre **RAX**.
 4. Les appels système sont limités à 6 arguments. Aucun argument n'est passé par la stack.
-5. Le retour de l'appel système est contenu dans le registre **RAX**. Une valeur comprise entre -4095 et -1
+5. Le retour de l'appel système est contenu dans le registre **RAX**. Une valeur comprise entre **-4095** et **-1**
    indique une erreur => `-errno`.
-6. Seulement des valeurs de classes INTEGER ou MEMORY sont passées au kernel.
+6. Seulement des valeurs de classes **INTEGER** ou **MEMORY** sont passées au kernel.
 
-Vous trouverez ces informations précisément dans l'ABI AMD64.
+Vous trouverez ces informations précisément dans **l'ABI AMD64**.
 
 ## Documentations très utiles
 
@@ -237,12 +236,12 @@ Vous trouverez ces informations précisément dans l'ABI AMD64.
 ### Livres
 
 **Assembly Language Step by Step - *Jeff Duntemann***  
-Ressource inestimable. Même si le livre traite de CPU
+> Ressource inestimable. Même si le livre traite de CPU
 32-bits, toutes les explications sur la gestion de la mémoire sont claires, détaillées, évidentes.  
 À moins que je n'ai eu de gros soucis de traduction, toutes les infos de ce README sont majoritairement issues de ce livre.  
 L'auteur utilise Linux et Nasm pour illustrer ses propos. Ce n'est pas très grave si les explications concernent le modèle 32-bits, car tout ce que nous avons à faire pour **LibASM**, et tout ce que ce livre peut nous enseigner est complètement transposable sur du 64 bits. Le reste des subtilités concerne les ingénieurs CPUs...
 
 **Low-Level Programming C, Assembly, and Program Execution on Intel 64 Architecture - *Igor Zhirkov***  
-Ce livre aussi est d'une grande aide. Il emmène dans le bain directement, donc il vaut mieux avoir compris comment
+> Ce livre aussi est d'une grande aide. Il emmène dans le bain directement, donc il vaut mieux avoir compris comment
 fonctionne la mémoire d'un CPU avant de le consulter. En revanche, il est illustré de nombreux exemples pour CPU
 64-bits, ce qui est fort appréciable. L'auteur aussi utilise Linux, Nasm et gcc.
