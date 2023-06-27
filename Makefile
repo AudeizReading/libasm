@@ -22,6 +22,7 @@ NAME = libasm
 #	   ))
 SRCS = $(addprefix ft_, $(addsuffix .s, \
 			strlen\
+			strcpy\
 	   ))
 OBJS = $(SRCS:.s=.o)
 
@@ -76,9 +77,9 @@ VPATH += $(EXP_PATH)
 all: $(NAME)
 	@$(echo) "arch: %-10.10s, opt: %-50.50s\r" $(arch) ${options}
 
-$(NAME): $(SRCS)
-	$(as) $(format) $(warning_options) $^
-	$(ar) $(archive_options) $@.a $(OBJS)
+$(NAME): $(OBJS)
+#	$(as) $(format) $(warning_options) $^
+	$(ar) $(archive_options) $@.a $^
 
 clean:
 	$(rm) $(OBJS)
@@ -94,9 +95,9 @@ fclean_bonus: clean_bonus
 
 re: clean all
 
-bonus: $(SRCS) $(BONUS_SRCS)
+bonus: $(OBJS) $(BONUS_OBJS)
 	$(as) $(format) $(warning_options) $^
-	$(ar) $(archive_options) $@.a $(OBJS) $(BONUS_OBJS)
+	$(ar) $(archive_options) $@.a $^
 
 test: $(TEST_SRCS) $(NAME)
 ifdef BONUS
@@ -108,6 +109,9 @@ else
 endif
 	./$@ Hello
 
+%.o: %.s 
+	$(as) $(format) $(warning_options) $< -o $(<:.s=.o)
+#	$(cc) $(warning_options) -I $(EXP_HEADER) -S $< -o $(<:.c=.s)
 %.s: %.c 
 	$(cc) $(warning_options) -I $(EXP_HEADER) -S $< -o $(<:.c=.s)
 
