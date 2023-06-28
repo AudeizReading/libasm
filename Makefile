@@ -11,7 +11,7 @@ debug_options = -g
 compil_options = -Wall -Werror -Wextra
 archive_options = crs
 
-NAME = libasm
+NAME = libasm.a
 #SRCS = $(addprefix ft_, $(addsuffix .s, \
 #			strlen\
 #			strcpy\
@@ -24,6 +24,7 @@ SRCS = $(addprefix ft_, $(addsuffix .s, \
 			strlen\
 			strcpy\
 			strcmp\
+			strdup\
 	   ))
 OBJS = $(SRCS:.s=.o)
 
@@ -76,11 +77,9 @@ VPATH += $(EXP_PATH)
 .PHONY: clean fclean re all bonus test experience1
 
 all: $(NAME)
-	@$(echo) "arch: %-10.10s, opt: %-50.50s\r" $(arch) ${options}
 
 $(NAME): $(OBJS)
-#	$(as) $(format) $(warning_options) $^
-	$(ar) $(archive_options) $@.a $^
+	$(ar) $(archive_options) $@ $^
 
 clean:
 	$(rm) $(OBJS)
@@ -94,11 +93,11 @@ fclean: clean
 fclean_bonus: clean_bonus
 	$(rm) $(NAME)
 
-re: clean all
+re: fclean all
 
 bonus: $(OBJS) $(BONUS_OBJS)
 	$(as) $(format) $(warning_options) $^
-	$(ar) $(archive_options) $@.a $^
+	$(ar) $(archive_options) $(NAME) $^
 
 test: $(TEST_SRCS) $(NAME)
 	$(rm) $@ && make re
@@ -109,7 +108,7 @@ else
 #	make $(NAME)
 	$(cc) $(compil_options) -g -L . -lasm $< -o $@
 endif
-	./$@ Hello
+	./$@ "Hello 42's M8 That Will Correct Me For This LibASM Thing !!!! ~~~ ???? 000"
 
 %.o: %.s 
 	$(as) $(format) $(warning_options) -g $< -o $(<:.s=.o)

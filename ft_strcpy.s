@@ -31,10 +31,11 @@ _ft_strcpy:
 loop_init:					; Une boucle for a besoin de 3 labels minimum pour itérer convenablement, ici c'est
 							; l'init telle qu'on la connait sur une boucle for
 	mov		rax, [rbp - 16]	; On recup dans RAX (src) ce qui a été mis dans RSI puis sur la stack
-	mov		byte al, [rax]	; On copie dans AL la valeur du 1er byte de RAX
+	mov		al, byte [rax]	; On copie dans AL la valeur du 1er byte de RAX
 
 	mov		rcx, [rbp - 8]	; On recup dans RCX (dst) ce qui a été mis dans RDI puis sur la stack 
-	mov		byte al, [rcx]	; On copie dans AL (qui pointe sur la valeur de la 1ere case mem de dst présentée à cet
+	mov		byte [rcx], al	; On copie dans AL (qui pointe sur la valeur de la 1ere case mem de dst présentée à cet
+;	mov		byte al, [rcx]	; On copie dans AL (qui pointe sur la valeur de la 1ere case mem de dst présentée à cet
 							; instant) la valeur du 1er byte de RCX
 							; Ces 4 mov sont l'équivalent de *dst = *src
 
@@ -59,7 +60,6 @@ loop_exit:					; Gestion de la sortie de la loop une fois qu'on trouve src == 0
 							; dans lequel on a effectué la copie, c'est ce qu'on va récupérer dans RAX pour le
 							; transmettre à toute fonction
 	
-
 ; Epilog
 	pop		rbp				; On remet RBP dans son état initial
 	ret						; Sortie de ft_strcpy 
