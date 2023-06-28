@@ -23,6 +23,7 @@ NAME = libasm
 SRCS = $(addprefix ft_, $(addsuffix .s, \
 			strlen\
 			strcpy\
+			strcmp\
 	   ))
 OBJS = $(SRCS:.s=.o)
 
@@ -100,20 +101,21 @@ bonus: $(OBJS) $(BONUS_OBJS)
 	$(ar) $(archive_options) $@.a $^
 
 test: $(TEST_SRCS) $(NAME)
+	$(rm) $@ && make re
 ifdef BONUS
 	make bonus
-	$(cc) $(compil_options) -L . -lasm $< -o $@
+	$(cc) $(compil_options) -g -L . -lasm $< -o $@
 else
-	make $(NAME)
-	$(cc) $(compil_options) -L . -lasm $< -o $@
+#	make $(NAME)
+	$(cc) $(compil_options) -g -L . -lasm $< -o $@
 endif
 	./$@ Hello
 
 %.o: %.s 
-	$(as) $(format) $(warning_options) $< -o $(<:.s=.o)
+	$(as) $(format) $(warning_options) -g $< -o $(<:.s=.o)
 #	$(cc) $(warning_options) -I $(EXP_HEADER) -S $< -o $(<:.c=.s)
 %.s: %.c 
-	$(cc) $(warning_options) -I $(EXP_HEADER) -S $< -o $(<:.c=.s)
+	$(cc) $(warning_options) -g -I $(EXP_HEADER) -S $< -o $(<:.c=.s)
 
 # $< 1ere dependance
 experience1: $(EXP_ASM)

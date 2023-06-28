@@ -3,11 +3,12 @@
 #include <stdlib.h>
 
 #define FPRINTF(args...) fprintf(stdout, args);
-#define PRINT_INT(x) FPRINTF("\033[31;1m%s:%d\033[0m\t%s = %d\n", __FILE__, __LINE__, #x, x)
-#define PRINT_STR(x) FPRINTF("\033[33;1m%s:%d\033[0m\t%s = %s\n", __FILE__, __LINE__, #x, x)
+#define PRINT_INT(x) FPRINTF("\033[31;1m%s:%d\033[0m\t%-60s =\t%d\n", __FILE__, __LINE__, #x, x)
+#define PRINT_STR(x) FPRINTF("\033[33;1m%s:%d\033[0m\t%-60s =\t%s\n", __FILE__, __LINE__, #x, x)
 
-extern int ft_strlen(const char *s);
+extern size_t ft_strlen(const char *s);
 extern char * ft_strcpy(char *dst, const char *src);
+extern int	ft_strcmp(const char *s1, const char *s2);
 
 int main(int argc, char **argv) {
 
@@ -25,6 +26,14 @@ int main(int argc, char **argv) {
 		PRINT_STR(dst);
 		PRINT_STR(ft_strcpy(dst, argv[1]));
 		PRINT_STR(dst);
+
+		/* ft_strcmp - strcpy comparison */
+		PRINT_INT(strcmp(argv[1], dst));
+		PRINT_INT(ft_strcmp(argv[1], dst));
+		PRINT_INT(strcmp(dst, &argv[1][2]));
+		PRINT_INT(ft_strcmp(dst, &argv[1][2]));
+		PRINT_INT(strcmp(&argv[1][1], dst));
+		PRINT_INT(ft_strcmp(&argv[1][1], dst));
 
 		free(dst);
 		return 0;
