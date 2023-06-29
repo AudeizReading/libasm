@@ -92,6 +92,17 @@ int main(int argc, char **argv) {
 		PRINT_STR(strerror(errno));
 		PRINT_STR("----------------------------------------");
 
+		errno = 0;
+		PRINT_INT((int)write(1, NULL, len_ft_strlen));
+		PRINT_INT(errno);
+		PRINT_STR(strerror(errno));
+		PRINT_STR("----------------------------------------");
+		errno = 0;
+		PRINT_INT((int)ft_write(1, NULL, len_ft_strlen));
+		PRINT_INT(errno);
+		PRINT_STR(strerror(errno));
+		PRINT_STR("----------------------------------------");
+
 
 		size_t	len = 50;
 		char	test_read[50] = {0};
@@ -105,6 +116,45 @@ int main(int argc, char **argv) {
 		PRINT_STR("----------------------------------------");
 		errno = 0;
 		PRINT_INT((int)ft_read(0, test_ft_read, len));
+		PRINT_INT(errno);
+		PRINT_STR(strerror(errno));
+		PRINT_STR(test_ft_read);
+		PRINT_STR("----------------------------------------");
+
+		errno = 0;
+		PRINT_INT((int)read(-1, test_read, len));
+		PRINT_INT(errno);
+		PRINT_STR(strerror(errno));
+		PRINT_STR(test_read);
+		PRINT_STR("----------------------------------------");
+		errno = 0;
+		PRINT_INT((int)ft_read(-1, test_ft_read, len));
+		PRINT_INT(errno);
+		PRINT_STR(strerror(errno));
+		PRINT_STR(test_ft_read);
+		PRINT_STR("----------------------------------------");
+
+		errno = 0;
+		PRINT_INT((int)read(0, test_read, -10));
+		PRINT_INT(errno);
+		PRINT_STR(strerror(errno));
+		PRINT_STR(test_read);
+		PRINT_STR("----------------------------------------");
+		errno = 0;
+		PRINT_INT((int)ft_read(0, test_ft_read, -10));
+		PRINT_INT(errno);
+		PRINT_STR(strerror(errno));
+		PRINT_STR(test_ft_read);
+		PRINT_STR("----------------------------------------");
+
+		errno = 0;
+		PRINT_INT((int)read(0, NULL, len));
+		PRINT_INT(errno);
+		PRINT_STR(strerror(errno));
+		PRINT_STR(test_read);
+		PRINT_STR("----------------------------------------");
+		errno = 0;
+		PRINT_INT((int)ft_read(0, NULL, len));
 		PRINT_INT(errno);
 		PRINT_STR(strerror(errno));
 		PRINT_STR(test_ft_read);
