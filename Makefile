@@ -25,6 +25,8 @@ SRCS = $(addprefix ft_, $(addsuffix .s, \
 			strcpy\
 			strcmp\
 			strdup\
+			write\
+			read\
 	   ))
 OBJS = $(SRCS:.s=.o)
 

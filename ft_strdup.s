@@ -38,11 +38,11 @@ _ft_strdup:
 	call	_ft_strlen				; appel a ft_strlen, retour de la taille de s dans rax
 	add		rax, 1					; On ajoute 1 a la valeur contenue dans rax (cette fois c'est une valeur et non
 									; une adresse), c'est la taille pour le 0 final
-	mov		[rbp - 24], rax	; Sauvegarde de la valeur de len sur la stack
+	mov		[rbp - 24], rax			; Sauvegarde de la valeur de len sur la stack
 
-	mov		rdi, [rbp - 24]	; On place len dans rdi afin de le passer a malloc
+	mov		rdi, [rbp - 24]			; On place len dans rdi afin de le passer a malloc
 	call	_malloc					; appel a malloc, le retour est mis dans rax
-	mov		[rbp - 32], rax	; Sauvegarde du retour de malloc sur la stack
+	mov		[rbp - 32], rax			; Sauvegarde du retour de malloc sur la stack
 	cmp		rax, 0					; On checke si malloc a retourné 0 
 	jne		copy_datas				; Si non (tout est OK), on va au label de copie des datas
 	mov		qword [rbp - 8], 0		; Si fail de malloc, on place ce resultat sur la stack pour le restituer le
@@ -50,19 +50,19 @@ _ft_strdup:
 	jmp		epilog					; go la fin aka le moment venu
 
 copy_datas:
-	mov		rdi, [rbp - 32]	; On place notre var locale copy dans le registre rdi pr call ft_strcpy
-	mov		rsi, [rbp - 16]	; On place l'argument s dans le registre rsi pr call ft_strcpy
+	mov		rdi, [rbp - 32]			; On place notre var locale copy dans le registre rdi pr call ft_strcpy
+	mov		rsi, [rbp - 16]			; On place l'argument s dans le registre rsi pr call ft_strcpy
 	call	_ft_strcpy				; appel a strcpy
-	mov		rax, [rbp - 32]	; Sauvegarde de copy dans rax (est-ce qu'on ecrase ft_strcpy?)
-	mov		rcx, [rbp - 24]	; On recup len dans rcx
+	mov		rax, [rbp - 32]			; Sauvegarde de copy dans rax
+	mov		rcx, [rbp - 24]			; On recup len dans rcx
 	mov		byte [rax + rcx], 0		; copy[len] = 0
 
-	mov		rax, [rbp - 32]	; Recuperation de copy dans rax
-	mov		[rbp - 8], rax	; poour le positionner sur la case retour de la stack
+	mov		rax, [rbp - 32]			; Recuperation de copy dans rax
+	mov		[rbp - 8], rax			; pour le positionner sur la case retour de la stack
 
 epilog:
 ; epilog
-	mov		rax, [rbp - 8]	; Recuperation du resultat dans rax pour le transmettre a l'appelant
+	mov		rax, [rbp - 8]			; Recuperation du resultat dans rax pour le transmettre a l'appelant
 	add		rsp, 32					; On remet la stack propre comme on l'a trouvee
 	pop		rbp						; Restauration état antérieur
 	ret								;
