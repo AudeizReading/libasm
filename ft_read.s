@@ -21,18 +21,10 @@ _ft_read:
 	mov		rbp, rsp	;
 	sub		rsp, 32
 
-	mov		qword [rbp - 16], rdi			; fildes 
-	mov		qword [rbp - 24], rsi			; buffer
-	mov		qword [rbp - 32], rdx			; iovcnt
-
 	mov		rax, [rel read_syscall]		; On doit placer la valeur du syscall dans rax
 											; [rel read_syscall] est la syntaxe pour acceder a la valeur d'un
 											; label de la section data (nasm tutorial)
 
-	mov		rdi, qword [rbp - 16]			; préparation de fildes pr read syscall
-	mov		rsi, qword [rbp - 24]			; préparation de buffer pr read syscall
-	mov		rdx, qword [rbp - 32]			; préparation de iovcnt pr read syscall
-	syscall									; Appel au syscall read
 
 	mov		[rbp - 8], rax					; Sauvegarde du retour de l'appel système read
 											; MacOSX a la particularité de ne pas retourner les erreurs sous
