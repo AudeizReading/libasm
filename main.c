@@ -189,7 +189,6 @@ int main(int argc, char **argv) {
 #endif
 
 #ifdef BONUS
-		(void)argv;
 		BONUS_STR(BONUS);
 		BONUS_STR("----------------------------------------");
 		BONUS_INT((int)ft_atoi_base("123", "0123456789"));	// -> 123

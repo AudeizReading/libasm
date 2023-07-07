@@ -56,7 +56,7 @@ TEST_OBJS = $(TEST_SRCS:.c=.o)
 #                                                                              #
 ################################################################################
 
-.PHONY: clean fclean re all bonus test experience1
+.PHONY: clean fclean re all bonus test 
 
 all: $(NAME)
 
@@ -83,7 +83,7 @@ fclean_bonus: clean_bonus
 re: fclean all
 
 bonus: 
-	$(make) $(NAME) BONUS=1
+	make $(NAME) BONUS=1
 
 test: $(TEST_SRCS) 
 	$(make) fclean_test
@@ -100,7 +100,7 @@ test_bonus:
 	$(make) test BONUS=1
 
 fclean_test: fclean_bonus
-	${rm} test
+	${rm} test $(TEST_OBJS)
 
 %.o: %.s 
 	$(as) $(format) $(warning_options) $< -o $(<:.s=.o)
