@@ -1,25 +1,33 @@
+################################################################################
+#                                                                              #
+#                                COMMANDES                                     #
+#                                                                              #
+################################################################################
+
 arch = $(shell uname)
 as = nasm
 cc = gcc
 rm = rm -rf
 ar = ar
 echo = printf
+make = make -s --no-print-directory -i
 
-# a voir ce qu'il y a besoin pour le link des sources et le test
 warning_options = -Wall -Werror
 debug_options = -g
 compil_options = -Wall -Werror -Wextra
 archive_options = crs
 
+ifeq (${arch},Darwin)
+	format := -f macho64
+endif
+
+################################################################################
+#                                                                              #
+#                                  FILES                                       #
+#                                                                              #
+################################################################################
+
 NAME = libasm.a
-#SRCS = $(addprefix ft_, $(addsuffix .s, \
-#			strlen\
-#			strcpy\
-#			strcmp\
-#			write\
-#			read\
-#			strdup\
-#	   ))
 SRCS = $(addprefix ft_, $(addsuffix .s, \
 			strlen\
 			strcpy\
@@ -39,49 +47,26 @@ BONUS_SRCS = $(addprefix ft_, $(addsuffix _bonus.s, \
 	   ))
 BONUS_OBJS = $(BONUS_SRCS:.s=.o)
 
-TEST_SRCS = main.c
+TEST_SRCS = main.c 
 TEST_OBJS = $(TEST_SRCS:.c=.o)
 
-ifeq (${arch},Darwin)
-	format := -f macho64
-else
-	format := -f elf64
-endif
+################################################################################
+#                                                                              #
+#                                  RULES                                       #
+#                                                                              #
+################################################################################
 
-options = $(warning_options) $(format)
-
-ifdef DEBUG
-	options += $(debug_options)
-endif
-
-EXP_SRCS = $(addprefix ft_, $(addsuffix .c, \
-			strlen\
-			strcpy\
-			strcmp\
-			strdup\
-			memcpy\
-	   ))
-EXP_OBJS = $(EXP_SRCS:.c=.o)
-EXP_ASM = $(EXP_SRCS:.c=.s)
-
-BONUS_EXP_SRCS = $(addprefix ft_, $(addsuffix _bonus.c, \
-			atoi_base\
-			list_push_front\
-			list_size\
-			list_sort\
-			list_remove_if\
-	   ))
-BONUS_EXP_OBJS = $(BONUS_EXP_SRCS:.c=.o)
-EXP_PATH = ./minilibft/
-EXP_HEADER = minilibft.h
-
-VPATH += $(EXP_PATH)
 .PHONY: clean fclean re all bonus test experience1
 
 all: $(NAME)
 
+ifdef BONUS
+$(NAME): $(OBJS) $(BONUS_OBJS)
+	$(ar) $(archive_options) $@ $^
+else
 $(NAME): $(OBJS)
 	$(ar) $(archive_options) $@ $^
+endif
 
 clean:
 	$(rm) $(OBJS)
@@ -97,27 +82,25 @@ fclean_bonus: clean_bonus
 
 re: fclean all
 
-bonus: $(OBJS) $(BONUS_OBJS)
-	$(as) $(format) $(warning_options) $^
-	$(ar) $(archive_options) $(NAME) $^
+bonus: 
+	$(make) $(NAME) BONUS=1
 
-test: $(TEST_SRCS) $(NAME)
-	$(rm) $@ && make re
+test: $(TEST_SRCS) 
+	$(make) fclean_test
 ifdef BONUS
-	make bonus
-	$(cc) $(compil_options) -g -L . -lasm $< -o $@
+	$(make) bonus
+	$(cc) $(compil_options) -Wno-deprecated-non-prototype -DBONUS="\"C\'est la bonus party\"" -L . -lasm $^ -o $@
 else
-#	make $(NAME)
-	$(cc) $(compil_options) -g -L . -lasm $< -o $@
+	$(make) 
+	$(cc) $(compil_options) -L . -lasm $^ -o $@
 endif
-	./$@ "Hello 42's M8 That Will Correct Me For This LibASM Thing !!!! ~~~ ???? 000"
+	./$@ "Hello 42's M8 That Will Correct Me"
+
+test_bonus:
+	$(make) test BONUS=1
+
+fclean_test: fclean_bonus
+	${rm} test
 
 %.o: %.s 
-	$(as) $(format) $(warning_options) -g $< -o $(<:.s=.o)
-#	$(cc) $(warning_options) -I $(EXP_HEADER) -S $< -o $(<:.c=.s)
-%.s: %.c 
-	$(cc) $(warning_options) -g -I $(EXP_HEADER) -S $< -o $(<:.c=.s)
-
-# $< 1ere dependance
-experience1: $(EXP_ASM)
-#	$(cc) $(warning_options) -I $(EXP_HEADER) -S $^ -o $(^:.c=.s)
+	$(as) $(format) $(warning_options) $< -o $(<:.s=.o)
