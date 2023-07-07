@@ -51,7 +51,6 @@ Les unites de mesure principales sont:
 - **d** => double word = 2 words = 4 bytes = 32 bits
 - **q** => quad word = 2 double words = 4 words = 8 bytes = 64 bits
 
-On se déplace de 64 bits en 64 bits dans la plage d'adresse mémoire du programme.
 
 ## Les types
 
@@ -77,7 +76,7 @@ libft, l'adapter au sujet et produire les fichiers assembleur attendus de la fa�
 
 ### AT&T
 
-Il y a plusieurs différences majeures, mais les 2 principales à connaître, c'est l'emploi de **%** devant
+Il y a plusieurs différences majeures, mais les 2 principales à connaître, sont l'emploi de **%** devant
 les noms de variables, et l'inversion des opérandes de *source* et de *destination* par rapport à la syntaxe
 Intel.
 
@@ -180,7 +179,35 @@ une fonction particulière et transmet son résultat en étant levé (1) ou bais
 Par exemple, le bit **CF** de ce registre sera à 1 si le résultat d'une opération a une retenue.  
 L'instruction `cmp dst, src` effectue la différence des adresses mémoire de dst et src. Selon le résultat
 obtenu, certains bits de **FLAGS** seront levés ou descendus via cette instruction. L'instruction `je` à la suite, bien souvent, vérifie si la différence d'adresses vaut 0, donc si le flags **ZF** est levé.  
-Ce n'est pas du tout le programmeur qui change les états de ce registre de manière directe.  
+Ce n'est pas du tout le programmeur qui change les états de ce registre de manière directe, en général ce sont les
+instructions machines qui se chargent des lectures et écritures dans **RFLAGS**.  
+
+### Les sections
+Un segment de mémoire contient différentes sections. Comme c'est légèrement technique, et pour une meilleure vue d'ensemble,
+je vous renvoie au 1er livre de la bibliographie, l'auteur expliquera beaucoup mieux que moi les mécanismes intrasèques
+des segments... *(ça vous dit quelque chose les segmentation faults ?* 😎 *)*
+
+Il faut surtout retenir 5 sections qu'on manipule principalement en assembleur: **.text**, **.data**, **.bss**, **heap**
+et **stack**.
+
+La section **.text** est dédiée aux instructions machine. C'est elle qui contiendra les différentes commandes `nasm`
+dans notre cas.
+
+La section **.data** contient les données initialisées, et la **.bss**, celles non initialisées.
+
+La section **heap** contient des données dont la vocation est de persister au travers de l'exécution des instructions
+machine tant que leur
+espace n'est pas libéré. La **stack**, quant à elle, est destinée à recevoir les variables temporaires, susceptibles
+d'être écrasées à n'importe quel moment.
+
+J'ai été particulièrement surprise, en faisant ce projet, de découvrir qu'on pouvait se contenter de n'utiliser que la section
+**.text** et la **stack** pour produire des exécutables. Dans mon inconscient, il était nécessaire d'employer toutes les
+sections, mais en effet, il semble logique, dans une quête de moindre monopolisation de l'espace mémoire de rechercher
+la moindre économie.
+
+La stack étant initialisée au `runtime`, on a tout à y gagner d'y transférer les données qu'on aurait installées en
+sections **.data** et **.bss**. Cela nous donne un exécutable plus léger en mémoire après sa compilation. C'est ce but
+qui est recherché.
 
 ### Fonctions
 Les paramètres de fonctions sont stockés respectivement dans les registres **RDI**, **RSI**, **RDX**, **RCX**, **R8**, et **R9**. Au-delà,
@@ -197,7 +224,8 @@ push   rbp
 mov    rbp, rsp
 ```
 
-L'épilogue nettoie le cadre de pile et restaure la stack et RBP à leurs états antérieurs
+L'épilogue nettoie le cadre de pile et restaure la stack et RBP à leurs états antérieurs (voir plus bas pour une
+        description d'un prolog)
 
 ```asm
 leave
@@ -221,6 +249,131 @@ quelques différences près.
 
 Vous trouverez ces informations précisément dans **l'ABI AMD64**.
 
+### La gestion des adresses
+L'ABI fournit précisément ces informations: *la Stack est alignée sur 16 bytes*, cela veut dire que son
+emplacement mémoire se situe sur une adresse dont l'identifiant est un multiple de 16. Son découpage
+interne suit les
+mêmes principes mais l'alignement en son sein se fait  en général sur un multiple de 8. Pour accéder à un élément sur la
+stack, sans `push/pop`, on utilise le couteau suisse `mov op1, op2` (en synatxe Intel, on place l'adresse
+        contenue en op2 dans l'op1), et donc pour effectuer un déplacement - en fait une copie - on fera:
+
+```asm
+mov [rbp - 16], rdi     ; on recup le 1er paramètre de la fonction, pour le placer sur la stack à l'emplacement
+                        ; rbp - 16 (n'oubliez pas que les adresses de la stack décroissent quand on la remonte)
+```
+
+En outre, les données que l'on manipule ont leurs propres tailles d'occupation selon le type sous lequel
+l'assembleur les catégorise. L'ABI fournit cette liste détaillée, mais dans l'absolu, en tout cas pour le projet
+LibASM, on partira sur ces valeurs:
+
+* un **CHAR** occupe 1 byte,
+* un **INT** occupe 4 bytes,
+* un **LONG** occupe 8 bytes,
+* un **POINTEUR** occupe 8 bytes
+* un **ARRAY** occupe son nombre d'éléments * son type (donc un tableau de 256 char occupent 256 bytes, en int ce
+        sera 1024 bytes, etc.)
+* un **FLOAT** a ses propres spécifications en terme de taille et de registres. Pour libASM, l'information n'est
+pas pertinente, et un poil plus complexe, car il faut déjà savoir comment les bits d'un flottant sont agencés.
+(étudiants 42, je vous renvoie au CPP 02...)
+* une **STRUCTURE** occupera la taille de ses éléments, aligné sur son composant le plus strictement aligné. Chaque
+membre est placé au plus petit offset disponible avec l'alignement approprié. Pour illustrer, supposons un
+pointeur fizz de type:
+
+```C
+struct foo {
+    int bar;
+    int *baz
+}
+
+struct foo *fizz = ...
+```
+
+Pour déterminer son adressage, on repère l'élément qui nécessite le plus grand espace, car c'est sur son
+alignement que tout se basera. Ici, il s'agit de `baz`, c'est un pointeur sur entier, donc il a besoin de 8
+bytes. Son membre `bar`, lui n'a besoin que de 4 bytes, mais comme l'alignement est sur 8 bytes, on le placera
+sur le premier offset disponible, qui ici, ne correspond pas à la taille qu'il occupera. Autre point à ne
+surtout pas négliger, `fizz` et `fizz->bar` pointe sur le meme espace mémoire. C'est pour cela qu on fera:
+
+```asm
+mov [rbp - 8], 4    ; fizz->bar prend la valeur 4
+mov [rbp - 16], 0   ; fizz->baz init à NULL
+```
+
+et non:
+
+```asm
+mov [rbp - 4], 4    ; fizz->bar prend la valeur 4
+mov [rbp - 12], 0   ; fizz->baz init à NULL
+```
+
+*Ne reproduisez pas ce code bêtement, il est juste là pour illustrer ce qui se passe, et potentiellement ne
+ fonctionnera pas.*
+
+ On pourra par exemple combler les 4 bytes inoccupés, en y plaçant une valeur de retour de fonction dont le type occupe 4 bytes ou moins, si on en retourne une bien sûr. La cas contraire `[rbp - 4]` ne sera pas utilisé.
+
+ Un programme efficace, c'est un programme qui optimise pleinement l'occupation de la stack ainsi que son accès.
+
+#### Pourquoi `push rbp` ?
+
+ C'est le schema ci-dessous qui m'a pleinement aidée à saisir l'intérêt de la manipulation, il illustre le code
+ assembleur suivant:
+
+ ```asm
+ ...
+ call   _main
+ ...
+ section .txt
+ global _main
+ _main:
+ push   rbp
+ mov    rbp, rsp
+ sub    rsp, 32
+ ```
+
+ ```txt
+            call _main                   push rbp                          mov rbp, rsp                sub rsp, 32
+
+vers 0xFFFFFFFF                                             STACK
+/|\
+  | 
+         ------------------           ------------------                ------------------           ------------------
+ RSP ->  | RETURN ADDRESS |   RSP ->  |   CALLER RBP   |   RSP, RBP ->  |   CALLER RBP   |   RSP ->  |                |
+         ------------------           ------------------                ------------------           ---            ---
+         |      ****      |           | RETURN ADDRESS |                | RETURN ADDRESS |           |                |
+         ------------------           ------------------                ------------------           ---   LOCALS   ---
+         |      ****      |           |      ****      |                |      ****      |           |                |
+         ------------------           ------------------                ------------------           ---            ---
+         |      ****      |           |      ****      |                |      ****      |           |                |
+         ------------------           ------------------                ------------------           ------------------
+         |      ****      |           |      ****      |                |      ****      |   RBP ->  |   CALLER RBP   |
+         ------------------           ------------------                ------------------           ------------------
+         |      ****      |           |      ****      |                |      ****      |           | RETURN ADDRESS |
+         ------------------           ------------------                ------------------           ------------------
+         |      ****      |           |      ****      |                |      ****      |           |      ****      |
+         ------------------           ------------------                ------------------           ------------------
+         |      ****      |           |      ****      |                |      ****      |           |      ****      |
+         ------------------           ------------------                ------------------           ------------------
+         |      ****      |           |      ****      |                |      ****      |           |      ****      |
+         ------------------           ------------------                ------------------           ------------------
+ RBP ->  |     OLD RBP    |   RBP ->  |     OLD RBP    |                |     OLD RBP    |           |      ****      |
+         ------------------           ------------------                ------------------           ------------------
+         |      ****      |           |      ****      |                |      ****      |           |      ****      |
+         ------------------           ------------------                ------------------           ------------------
+         |      ****      |           |      ****      |                |      ****      |           |      ****      |
+         ------------------           ------------------                ------------------           ------------------
+                                                                                                     |      ****      |
+                                                                                                     ------------------
+                                                                                                     |     OLD RBP    |
+                                                                                                     ------------------
+                                                                                                     |      ****      |
+                                                                                                     ------------------
+                                                                                                     |      ****      |
+                                                                                                     ------------------
+  | 
+\|/
+vers 0x00000000                                             
+ ```
+
 ## Documentations très utiles
 
 ### Websites
@@ -231,8 +384,9 @@ Vous trouverez ces informations précisément dans **l'ABI AMD64**.
 [NASM](https://www.nasm.us/doc/)  
 [hackndo](https://beta.hackndo.com/assembly-basics/)  
 [Mach-O Programming Topics](https://developer.apple.com/library/archive/documentation/DeveloperTools/Conceptual/MachOTopics/1-Articles/x86_64_code.html)  
-[Syscalls MacOSX](https://opensource.apple.com/source/xnu/xnu-1504.3.12/bsd/kern/syscalls.master)  
-[Compiler Explorer](https://godbolt.org/). Compilateur en ligne.  
+[Syscalls MacOSX](https://opensource.apple.com/source/xnu/xnu-1504.3.12/bsd/kern/syscalls.master)   
+[Compiler Explorer](https://godbolt.org/). Compilateur en ligne. 
+[Stack vs Heap](https://www.guru99.com/stack-vs-heap.html)
 
 ### Livres
 
@@ -245,4 +399,32 @@ L'auteur utilise Linux et Nasm pour illustrer ses propos. Ce n'est pas très gra
 **Low-Level Programming C, Assembly, and Program Execution on Intel 64 Architecture - *Igor Zhirkov***  
 > Ce livre aussi est d'une grande aide. Il emmène dans le bain directement, donc il vaut mieux avoir compris comment
 fonctionne la mémoire d'un CPU avant de le consulter. En revanche, il est illustré de nombreux exemples pour CPU
-64-bits, ce qui est fort appréciable. L'auteur aussi utilise Linux, Nasm et gcc.
+64-bits, ce qui est fort appréciable. L'auteur aussi utilise Linux, Nasm et gcc.  
+
+**Assembleur Théorie, pratique et exercices - *Bernard Fabrot*** *- (en français)*   
+> Petit livre très pratique, il a un chapitre dédié aux commandes de bases que quasiment tous les assembleurs
+> implémentent, avec explications de leurs fonctionnements, leurs synopsis et des exemples d'utilisation. C'est
+> ici que j'ai appris que `CMP` effectue une soustraction de ses opérandes pour les comparer (un peu comme notre
+> ft_strcmp, en fait) alors que `TEST` applique un `&` binaire sur ses opérandes.
+> Il y a également une importante partie avec des mises en applications détaillées.
+> Son principal défaut, c'est qu'il est légèrement outdated (1996). Mais ses explications sur la Stack sont
+> tellement plus limpides...
+
+## Derniers conseils
+- Ne partez pas de rien, si vous n'avez jamais abordé de langage assembleur, documentez-vous. C'est essentiel de
+comprendre comment se gère et manipule la mémoire. Aucun cheat ne saurait le faire à votre place, et vous seriez
+vite démasqué si vous tombiez sur des correcteurs qui auraient fait ce projet *sérieusement*.
+- Prenez les fonctions de la libC comme support, cherchez à reproduire leurs comportements. Ces fonctions sont
+dans la libC, car elles ont un intérêt. Elles ont surtout été codées par des développeurs aguerris, qui, eux,
+     ont mangé de l'assembleur toute leur jeunesse. Elles ont été codées de façon à optimiser la gestion de la
+     mémoire. Nous ne sommes plus au temps de la libft, où on voulait croire que notre talent ferait toute la
+     librairie à notre place, il est temps de renforcer ses bases en apprenant des meilleurs structures de codes.
+- Suivez le tuto de nasm.
+- Cela m'a beaucoup aidé de coder les fonctionnalités dans cet ordre : `ft_strlen.s`, `ft_strcpy.s`, `ft_strcmp.s`,
+    `ft_strdup.s`, `ft_write.s`, `ft_read.s`. On se sert de `ft_strlen` et `ft_strcpy` pour produire `ft_strdup` -
+    j'en conviens, il y a beaucoup mieux à faire, c'était surtout pour ré-employer ce qui était déjà disponible
+    et ne pas avoir à recoder ft_memcpy - cet ordre s'est imposé de lui-même. En revanche, intercaler
+    `ft_strcmp` entre permet d'apprendre d'autres techniques utiles pour `ft_strdup`. Au final, finir avec
+    `ft_write/ft_read` (si vous avez l'un, vous avez l'autre) permet de synthétiser les notions, voir les appels
+    aux syscalls et s'amuser avec errno, dont la gestion est un peu tordue -> MacOSX ne suit pas l'ABI et
+    procède légèrement différemment que Linux à ce niveau. Mais l'info se trouve, avec un peu de recherches...
