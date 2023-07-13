@@ -189,7 +189,7 @@ int main(int argc, char **argv) {
 #endif
 
 #ifdef BONUS
-		BONUS_STR(BONUS);
+	/*	BONUS_STR(BONUS);
 		BONUS_STR("----------------------------------------");
 		BONUS_INT((int)ft_atoi_base("123", "0123456789"));	// -> 123
 		BONUS_INT((int)ft_atoi_base("123", "0123456789ABCDEF")); // -> 291
@@ -225,9 +225,11 @@ int main(int argc, char **argv) {
 		BONUS_STR("----------------------------------------");
 		BONUS_INT((int)ft_atoi_base("-1111111111111111", "1")); // -> 0, car base < 2
 
-		BONUS_STR("----------------------------------------");
+		BONUS_STR("----------------------------------------");*/
 
-		t_list	*begin = NULL;
+		//t_list	*begin = NULL;
+		t_list	*head;
+		t_list	*begin;
 		for (int i = ft_strlen(argv[1]); i > 0; --i) {
 			char *val = ft_strdup(argv[1]);;
 			if (i % 2)
