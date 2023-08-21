@@ -43,9 +43,15 @@
 
 section	.text
 
+%ifndef MACOSX
+global	ft_atoi_base
+
+ft_atoi_base:
+%else
 global	_ft_atoi_base
 
 _ft_atoi_base:
+%endif
 	push	rbp
 	mov		rbp, rsp
 	sub		rsp, 64
@@ -56,7 +62,11 @@ _ft_atoi_base:
 	mov		qword [rbp - 32], 0		; result = 0 => long int sur 8 bytes (int sur 4 bytes)
 
 	mov		rdi, [rbp - 24]			; recup base pour parametre de get_base
+%ifndef MACOSX
+	call	get_base				; on recup la base en int
+%else
 	call	_get_base				; on recup la base en int
+%endif
 	mov		[rbp - 40], eax			; on place ce resultat sur la stack base_int
 
 	cmp		dword [rbp - 40], 2		; base < 2 ?
@@ -68,7 +78,11 @@ _ft_atoi_base:
 .set_polarity_and_str_trim:
 	mov		rdi, [rbp - 16]			; recup de str pr le passer a get_polarity 
 									; va determiner si le nombre est pair ou impair
+%ifndef MACOSX
+	call	get_polarity			;
+%else
 	call	_get_polarity			;
+%endif
 	mov		dword [rbp - 36], eax	; le choix de cet adresse est un peu trivial, en suivant la pure continuité
 									; du code, sans savoir ce qu'il fait par la suite, on ne pouvait pas savoir
 									; a l'avance qu'on peut intercaler un int a cet endroit, au debut, on place
@@ -79,7 +93,11 @@ _ft_atoi_base:
 									; 36 sont libres et peuvent oqp par le retour de get_polarity
 
 	mov		rdi, [rbp - 16]			; On recup str pr argument
+%ifndef MACOSX
+	call	trim					;
+%else
 	call	_trim					;
+%endif
 	mov		[rbp - 56], rax			; On recupere str elimé des character a skip
 
 .while_str_not_null:
@@ -143,11 +161,17 @@ _ft_atoi_base:
 ;		return 0;
 ;	}
 
-section	.text
+;section	.text
 
+%ifndef MACOSX
+global	ft_isspace
+
+ft_isspace:
+%else
 global	_ft_isspace
 
 _ft_isspace:
+%endif
 	push	rbp					;
 	mov		rbp, rsp			; On sauvegarde l'état antérieur à la routine
 
@@ -195,9 +219,15 @@ _ft_isspace:
 ;
 ;section	.text
 ;
+%ifndef MACOSX
+global	ft_memset
+
+ft_memset:
+%else
 global	_ft_memset
 
 _ft_memset:
+%endif
 	push	rbp						;
 	mov		rbp, rsp				;
 
@@ -249,13 +279,18 @@ _ft_memset:
 ;		return i;
 ;	}
 
+;section .text
+%ifndef MACOSX
+global	get_base
+extern	ft_memset
+
+get_base:
+%else
 global	_get_base
 extern	_ft_memset
 
-section .data
-
-section .text
 _get_base:
+%endif
 	push	rbp						;
 	mov		rbp, rsp				; On sauvegarde l'état antérieur à la routine
 
@@ -270,7 +305,11 @@ _get_base:
 									; charger)
 	xor		esi, esi				; on remet rsi a 0 via xor
 	mov		edx, 256				; rdi prend la len du tab
+%ifndef MACOSX
+	call	ft_memset				; init du tableau a 0
+%else
 	call	_ft_memset				; init du tableau a 0
+%endif
 
 .while_base:
 	mov		rax, qword [rbp - 16]		; recup base
@@ -353,11 +392,17 @@ _get_base:
 ;		return 1;
 ;	}
 
-section	.text
+;section	.text
 
+%ifndef MACOSX
+global	get_polarity
+
+get_polarity:
+%else
 global	_get_polarity
 
 _get_polarity:
+%endif
 
 	push	rbp
 	mov		rbp, rsp
@@ -384,7 +429,11 @@ _get_polarity:
 
 	mov		rax, qword [rbp - 16]		; pareil mais pour check car espacement
 	movsx	edi, byte [rax]
+%ifndef MACOSX
+	call	ft_isspace
+%else
 	call	_ft_isspace
+%endif
 	cmp		eax, 0
 	setne	al
 	mov		byte [rbp - 21], al 
@@ -438,11 +487,17 @@ _get_polarity:
 ;		return (str + (p_str - str));
 ;	}
 
-section	.text
+;section	.text
 
+%ifndef MACOSX
+global	trim
+
+trim:
+%else
 global	_trim
 
 _trim:
+%endif
 	push	rbp;
 	mov		rbp, rsp;
 	sub		rsp, 32	;	Augment stack pr str && pointeur de retour
@@ -469,7 +524,11 @@ _trim:
 
 	mov		rax, qword [rbp - 16]		; pareil mais pour check car espacement
 	movsx	edi, byte [rax]
+%ifndef MACOSX
+	call	ft_isspace
+%else
 	call	_ft_isspace
+%endif
 	cmp		eax, 0
 	setne	al
 	mov		byte [rbp - 17], al 

@@ -58,6 +58,7 @@ extern	int						ft_atoi_base(char *str, char *base);
 # define VERSION_REAWRI			"----- FT_READ / FT_WRITE ---------------"
 # define VERSION_READ  			"----- FT_READ --------------------------"
 # define VERSION_WRITE  		"----- FT_WRITE -------------------------"
+# define VERSION_ATOI_B  		"----- FT_ATOI_BASE ---------------------"
 #else
 # define STRLEN(s)				strlen(s)
 # define STRCPY(dst, src)		strcpy(dst, src)
@@ -276,7 +277,7 @@ int main(int argc, char **argv) {
 #endif
 
 #ifdef BONUS
-		char ***atoi_base_tests_datas = {
+		char *atoi_base_tests_datas[42][2] = {
 			{"123", "0123456789"},// -> 123
 			{"123", "0123456789ABCDEF"},// -> 291
 			{"7B", "0123456789ABCDEF"},// -> 123
@@ -305,8 +306,13 @@ int main(int argc, char **argv) {
 			{"-80000000", "0123456789ABCDEF"},
 			{"-10000000000000000000000000000000", "01"},
 			{"-1111111111111111", "1"},// -> 0, car base < 2
-			NULL
+			{NULL, NULL}
 		};
+
+		for (int i = 0; atoi_base_tests_datas[i] != NULL; i++) {
+			BONUS_INT((int)ft_atoi_base(atoi_base_tests_datas[i][0], atoi_base_tests_datas[i][1]));
+			BONUS_STR(VERSION_ATOI_B);
+		}
 
 
 	/*	BONUS_STR(BONUS);

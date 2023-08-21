@@ -28,7 +28,7 @@ global _ft_read
 
 _ft_read:
 %endif
-;epilog
+;prolog
 	push	rbp	;
 	mov		rbp, rsp	;
 	sub		rsp, 32

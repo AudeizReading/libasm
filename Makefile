@@ -49,12 +49,15 @@ SRCS = $(addprefix ft_, $(addsuffix .s, \
 	   ))
 OBJS = $(SRCS:.s=.o)
 
+#BONUS_SRCS = $(addprefix ft_, $(addsuffix _bonus.s, \
+#			atoi_base\
+#			list_push_front\
+#			list_size\
+#			list_sort\
+#			list_remove_if\
+#	   ))
 BONUS_SRCS = $(addprefix ft_, $(addsuffix _bonus.s, \
 			atoi_base\
-			list_push_front\
-			list_size\
-			list_sort\
-			list_remove_if\
 	   ))
 BONUS_OBJS = $(BONUS_SRCS:.s=.o)
 
