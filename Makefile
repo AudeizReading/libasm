@@ -68,7 +68,7 @@ ifdef BONUS
 	compil_options += -Wno-deprecated-non-prototype -DBONUS="\"C\'est la bonus party\""
 	bonus_rule = bonus
 	regular_size=120
-	_bonus = _bonus
+	_bonus = bonus
 endif
 ################################################################################
 #                                                                              #
@@ -117,7 +117,13 @@ bonus:
 test: fclean_test $(bonus_rule) $(TEST_SRCS) 
 	@$(echo) " *** Starting testing: \t\t$(blu)%30.30s$(raz)\n\r" "$(NAME) $(_bonus)"
 	@$(cc) $(compil_options) $(TEST_SRCS) -L . -lasm -o $@
-	@./$@ "Hello WORLD"
+# regular
+	@./$@ "Solutions nearly always come from the direction you least expect, which means there's no point trying to look in that direction because it won't be coming from there."
+	@$(make) fclean_test
+	@$(make) $(bonus_rule)
+	@$(cc) $(compil_options) -DLIBASM $(TEST_SRCS) -L . -lasm -o $@
+# libasm
+	@./$@ "Solutions nearly always come from the direction you least expect, which means there's no point trying to look in that direction because it won't be coming from there."
 
 test_bonus:
 	@$(make) test BONUS=1

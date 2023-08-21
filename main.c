@@ -4,185 +4,30 @@
 #include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <stdarg.h>
 
-#define FPRINTF(args...) fprintf(stdout, args);
-#define PRINT_INT(x) FPRINTF("\033[31;1m%s:%d\033[0m\t%-45s =\t%d\n", __FILE__, __LINE__, #x, x)
-#define BONUS_INT(x) FPRINTF("\033[32;1m%s:%d\033[0m\t%-75s =\t%d\n", __FILE__, __LINE__, #x, x)
-#define PRINT_STR(x) FPRINTF("\033[33;1m%s:%d\033[0m\t%-45s =\t%s\n", __FILE__, __LINE__, #x, x)
-#define BONUS_STR(x) FPRINTF("\033[34;1m%s:%d\033[0m\t%-45s =\t%s\n", __FILE__, __LINE__, #x, x)
-#define BUFFER_SIZE 4096
+#define FPRINTF(args...)		fprintf(stdout, args);
+#define PRINT_INT(x)			FPRINTF("\033[31;1m%s:%d\033[0m\t%-45s =\t%d\n", __FILE__, __LINE__, #x, x)
+#define BONUS_INT(x)			FPRINTF("\033[32;1m%s:%d\033[0m\t%-75s =\t%d\n", __FILE__, __LINE__, #x, x)
+#define PRINT_STR(x)			FPRINTF("\033[33;1m%s:%d\033[0m\t%-45s =\t%s\n", __FILE__, __LINE__, #x, x)
+#define BONUS_STR(x)			FPRINTF("\033[34;1m%s:%d\033[0m\t%-45s =\t%s\n", __FILE__, __LINE__, #x, x)
+#define BUFFER_SIZE				4096
 
-extern	size_t	ft_strlen(const char *s);
-extern	char	*ft_strcpy(char *dst, const char *src);
-extern	int		ft_strcmp(const char *s1, const char *s2);
-extern	char	*ft_strdup(const char *s);
-extern	ssize_t	ft_write(int fildes, const void *buffer, size_t iovcnt);
-extern	ssize_t	ft_read(int fildes, const void *buffer, size_t iovcnt);
-#ifdef LIBASM
-# undef READ
-# undef WRITE
-# undef VERSION
-# define READ(x, y, z) ft_read(x, y, z)
-# define WRITE(x, y, z) ft_write(x, y, z)
-# define VERSION "ft version"
-#else
-# undef READ
-# undef WRITE
-# undef VERSION
-# define READ(x, y, z) read(x, y, z)
-# define WRITE(x, y, z) write(x, y, z)
-# define VERSION "regular version"
-#endif
-int	read_file(int fd_in, int fd_out) {
-	int		res_size = 0;
-	int		size = 0;
-	char	buffer[BUFFER_SIZE] = {0};
-
-	while ((res_size = READ(fd_in, buffer, BUFFER_SIZE)) > 0) {
-		size += res_size;
-		if (WRITE(fd_out, buffer, BUFFER_SIZE) < 0)
-			return errno;
-		buffer[0] = 0;
-	}
-	if (res_size == -1)
-		return errno;
-	return size;
-}
-
-//int mandatory_scenario(int fd_in, int fd_out) {}
-
-int		ft_strchr(char *s, int c)
-{
-	if (!s)
-		return 0;
-	while (*s)
-		if (*s++ == c)
-			return 1;
-	return 0;
-}
-
-char	*after_n(char *s)
-{
-	if (!s)
-		return NULL;
-	while (*s)
-		if (*s++ == '\n')
-			return s;
-	return NULL;
-}
-
-char	*before_n(char *s)
-{
-	char	*dst;
-	char	*aft_n;
-	int		len_dst;
-
-	if (!s)
-		return NULL;
-	aft_n = after_n(s);
-	len_dst = (aft_n) ? aft_n - s : (int)ft_strlen(s);
-	dst = malloc(len_dst + 1);
-	if (!dst)
-		return NULL;
-	dst[len_dst] = 0;
-	while (len_dst--)
-		dst[len_dst] = s[len_dst];
-	return dst;
-}
-
-char	*ft_concat(char *s1, char *s2)
-{
-	char	*dst;
-	int		len_s1 = ft_strlen(s1);
-	int		len_dst = len_s1 + ft_strlen(s2);
-
-	dst = malloc(len_dst + 1);
-	if (!dst)
-		return NULL;
-	dst[len_dst] = 0;
-	while (len_dst--)
-		dst[len_dst] = (len_dst >= len_s1) ? s2[len_dst - len_s1] : s1[len_dst];
-	free((void *)s1);
-	return dst;
-}
-
-char	*get_next_line(int fd)
-{
-	static char	buf[BUFFER_SIZE + 1] = {0};
-	char		*next_line = NULL;
-	char		*tmp = NULL;
-	int			ret = ft_strlen(buf) + 1;
-	int			i = 0;
-
-	if (BUFFER_SIZE < 1 || fd < 0)
-		return NULL;
-	while (!(ft_strchr(buf, '\n')) && ret > 0)
-	{
-		next_line = ft_concat(next_line, buf);
-		if (!next_line)
-			return NULL;
-		ret = ft_read(fd, buf, BUFFER_SIZE);
-		if (ret < 0)
-		{
-			if (next_line)
-				free(next_line);
-			return NULL;
-		}
-		buf[ret] = 0;
-	}
-	if (!ret && ft_strlen(next_line))
-	{
-		tmp = before_n(next_line);
-		free(next_line);
-		return tmp;
-	}
-	if (ft_strchr(buf, '\n'))
-	{
-		tmp = before_n(buf);
-		if (!tmp)
-		{
-			if (next_line)
-				free(next_line);
-			return NULL;
-		}
-		next_line = ft_concat(next_line, tmp);
-		if (!next_line)
-		{
-			free(tmp);
-			return NULL;
-		}
-		free(tmp);
-		tmp = after_n(buf);
-		if (!tmp)
-		{
-			if (next_line)
-				free(next_line);
-			return NULL;
-		}
-		while (tmp[i])
-		{
-			buf[i] = tmp[i];
-			i++;
-		}
-		buf[i] = 0;
-	}
-	else
-	{
-		if (next_line)
-			free(next_line);
-		return NULL;
-	}
-	return next_line;
-}
+extern	size_t					ft_strlen(const char *s);
+extern	char					*ft_strcpy(char *dst, const char *src);
+extern	int						ft_strcmp(const char *s1, const char *s2);
+extern	char					*ft_strdup(const char *s);
+extern	ssize_t					ft_write(int fildes, const void *buffer, size_t iovcnt);
+extern	ssize_t					ft_read(int fildes, const void *buffer, size_t iovcnt);
 
 #ifdef BONUS
-typedef struct s_list {
+typedef struct					s_list {
 	void			*data;
 	struct s_list	*next;
-}				t_list;
+}								t_list;
 
-t_list	*ft_create_elem(void *data) {
-	t_list	*elem = malloc(sizeof(t_list));
+t_list							*ft_create_elem(void *data) {
+	t_list			*elem = malloc(sizeof(t_list));
 	if (!elem)
 		return NULL;
 
@@ -191,212 +36,277 @@ t_list	*ft_create_elem(void *data) {
 	return elem;
 }
 
-extern	void	ft_list_push_front(t_list **begin_list, void *data);
-extern	int		ft_list_size(t_list *begin_list);
-extern	void	ft_list_remove_if(t_list **begin_list, void *data_ref, int (*cmp)(), void (*free_fn)(void *));
-extern	void	ft_list_sort(t_list **begin_list, int (*cmp)());
-extern	int		ft_atoi_base(char *str, char *base);
+extern	void					ft_list_push_front(t_list **begin_list, void *data);
+extern	int						ft_list_size(t_list *begin_list);
+extern	void					ft_list_remove_if(t_list **begin_list, void *data_ref, int (*cmp)(), void (*free_fn)(void *));
+extern	void					ft_list_sort(t_list **begin_list, int (*cmp)());
+extern	int						ft_atoi_base(char *str, char *base);
 #endif
+
+#ifdef LIBASM
+# define STRLEN(s)				ft_strlen(s)
+# define STRCPY(dst, src)		ft_strcpy(dst, src)
+# define STRCMP(s1, s2)			ft_strcmp(s1, s2)
+# define STRDUP(s)				ft_strdup(s)
+# define READ(x, y, z)			ft_read(x, y, z)
+# define WRITE(x, y, z)			ft_write(x, y, z)
+# define VERSION				"ft version"
+# define VERSION_STRLEN			"----- FT_STRLEN ------------------------"
+# define VERSION_STRCPY			"----- FT_STRCPY ------------------------"
+# define VERSION_STRCMP			"----- FT_STRCMP ------------------------"
+# define VERSION_STRDUP			"----- FT_STRDUP ------------------------"
+# define VERSION_REAWRI			"----- FT_READ / FT_WRITE ---------------"
+# define VERSION_READ  			"----- FT_READ --------------------------"
+# define VERSION_WRITE  		"----- FT_WRITE -------------------------"
+#else
+# define STRLEN(s)				strlen(s)
+# define STRCPY(dst, src)		strcpy(dst, src)
+# define STRCMP(s1, s2)			strcmp(s1, s2)
+# define STRDUP(s)				strdup(s)
+# define READ(x, y, z)			read(x, y, z)
+# define WRITE(x, y, z)			write(x, y, z)
+# define VERSION				"regular version"
+# define VERSION_STRLEN			"-------- STRLEN ------------------------"
+# define VERSION_STRCPY			"-------- STRCPY ------------------------"
+# define VERSION_STRCMP			"-------- STRCMP ------------------------"
+# define VERSION_STRDUP			"-------- STRDUP ------------------------"
+# define VERSION_REAWRI			"-----    READ /    WRITE ---------------"
+# define VERSION_READ  			"-----    READ --------------------------"
+# define VERSION_WRITE  		"-----    WRITE -------------------------"
+#endif
+
+enum e_functions {
+	TEST_STRLEN,
+	TEST_STRCPY,
+	TEST_STRCMP,
+	TEST_STRDUP,
+	TEST_READ,
+	TEST_WRITE,
+	TEST_ATOI_BASE,
+	TEST_FT_LIST_PUSH_FRONT,
+	TEST_FT_LIST_SIZE,
+	TEST_FT_LIST_REMOVE_IF,
+	TEST_FT_LIST_SORT
+};
+
+int	read_file(int fd_in, int fd_out) {
+	int		res_read_size = 0;
+	int		read_size = 0;
+	int		res_write_size = 0;
+	int		write_size = 0;
+	char	buffer[BUFFER_SIZE] = {0};
+
+	while ((res_read_size = READ(fd_in, buffer, BUFFER_SIZE)) > 0) {
+		read_size += res_read_size;
+		if ((res_write_size = WRITE(fd_out, buffer, BUFFER_SIZE)) < 0) {
+			PRINT_STR(VERSION_WRITE);
+			return errno;
+		}
+		write_size += res_write_size;
+		buffer[0] = 0;
+	}
+	if (res_read_size == -1) {
+		PRINT_STR(VERSION_READ);
+		return errno;
+	}
+	PRINT_STR(VERSION_REAWRI);
+	return read_size;
+}
+
+void tests_read_and_write(char *filename) {
+	int		fd = open(filename, O_RDONLY);
+	int		fds_in[] = {fd, 177, fd};
+	int		fds_out[] = {1, 1, 177};
+	
+	for (int i = 0; i < 3; i++) {
+		errno = 0;
+		PRINT_STR(VERSION);
+		PRINT_INT(read_file(fds_in[i], fds_out[i]));
+		PRINT_INT(errno);
+		PRINT_STR(strerror(errno));
+		PRINT_STR("----------------------------------------");
+	}
+	close(fd);
+	PRINT_STR(VERSION_REAWRI);
+}
+
+void tests_strlen(char **strs) {
+	for (int i = 0; strs[i] != NULL; i++) {
+		PRINT_STR(VERSION);
+		PRINT_STR(strs[i]);
+		PRINT_INT((int)STRLEN(strs[i]));
+		PRINT_STR("----------------------------------------");
+	}
+	PRINT_STR(VERSION_STRLEN);
+}
+
+void	tests_strcpy(char **strs) {
+	for (int i = 0; strs[i] != NULL; i++) {
+		char *dst = calloc(sizeof(char *), STRLEN(strs[i]) + 1);
+		PRINT_STR(VERSION);
+		PRINT_STR(strs[i]);
+		PRINT_STR(STRCPY(dst, strs[i]));
+		PRINT_STR(dst);
+		PRINT_STR("----------------------------------------");
+		free(dst);
+	}
+	PRINT_STR(VERSION_STRCPY);
+}
+
+void	tests_strcmp(char **strs1, char **strs2) {
+	for (int i = 0; strs1[i] != NULL; i++) {
+		PRINT_INT(STRCMP(strs1[i], strs2[i]));
+		PRINT_STR("----------------------------------------");
+		PRINT_INT(STRCMP(strs2[i], strs1[i]));
+		PRINT_STR("----------------------------------------");
+		PRINT_INT(STRCMP(&strs1[i][1], &strs2[i][1]));
+		PRINT_STR("----------------------------------------");
+		PRINT_INT(STRCMP(&strs1[i][1], &strs2[i][2]));
+		PRINT_STR("----------------------------------------");
+	}
+	PRINT_STR(VERSION_STRCMP);
+}
+
+void	tests_strdup(char **strs) {
+	for (int i = 0; strs[i] != NULL; i++) {
+		char *str_dup = STRDUP(strs[i]);
+		PRINT_STR(VERSION);
+		PRINT_STR(strs[i]);
+		PRINT_STR(str_dup);
+		PRINT_STR("----------------------------------------");
+		free(str_dup);
+	}
+	PRINT_STR(VERSION_STRDUP);
+}
+
+void print_result(enum e_functions type_test, ...) {
+	va_list		args;
+
+	va_start(args, type_test);
+
+	switch (type_test) {
+		case TEST_STRLEN:
+			{
+				char **test_strs = va_arg(args, char**);
+				tests_strlen(test_strs);
+			}
+			break;
+		case TEST_STRCPY:
+			{
+				char **test_strs = va_arg(args, char**);
+				tests_strcpy(test_strs);
+			}
+			break;
+		case TEST_STRCMP:
+			{
+				char **test_strs1 = va_arg(args, char**);
+				char **test_strs2 = va_arg(args, char**);
+				tests_strcmp(test_strs1, test_strs2);
+			}
+			break;
+		case TEST_STRDUP:
+			{
+				char **test_strs = va_arg(args, char**);
+				tests_strdup(test_strs);
+			}
+			break;
+		case TEST_READ:
+		case TEST_WRITE: 
+			{
+				char *filename = va_arg(args, char*);
+				tests_read_and_write(filename);
+			}
+			break;
+		case TEST_ATOI_BASE:
+			break;
+		case TEST_FT_LIST_PUSH_FRONT:
+			break;
+		case TEST_FT_LIST_SIZE:
+			break;
+		case TEST_FT_LIST_REMOVE_IF:
+			break;
+		case TEST_FT_LIST_SORT:
+			break;
+		default:
+			break;
+	}
+	va_end(args);
+
+#ifndef BONUS
+	printf("\033[35m========================================================================================================================\n\033[0m");
+#else
+	printf("\033[36m========================================================================================================================\n\033[0m");
+#endif
+}
 
 int main(int argc, char **argv) {
 
 	if (argc == 2 ) {
 #ifndef BONUS
-		(void)argv;
-		/* ft_strlen - strlen comparison */
-		/*int len_ft_strlen = ft_strlen(argv[1]);
+		char *strings_to_test[42] = {
+			&argv[1][STRLEN(argv[1]) / 2],
+			argv[1],
+			"Hello 42 World",
+			"Lorem Ipsum                         ......",
+			"",
+			"1234567890",
+			"123",
+			NULL
+	};
+		char *strings_to_cmp[42] = {
+			"Hello 42 World",
+			argv[1],
+			"Lorem Ipsum                         ......",
+			&argv[1][STRLEN(argv[1]) / 2],
+			"1234567890",
+			"",
+			"123",
+			NULL
+	};
+		
+		print_result(TEST_STRLEN, strings_to_test);
 
-		PRINT_STR("----------------------------------------");
-		PRINT_INT((int)strlen(argv[1]));
-		PRINT_INT((int)ft_strlen(argv[1]));*/
+		print_result(TEST_STRCPY, strings_to_test);
+		
+		print_result(TEST_STRCMP, strings_to_test, strings_to_cmp);
 
-		/* ft_strcpy - strcpy comparison */
-		/*char *dst = calloc(sizeof(char *), len_ft_strlen + 1);
+		print_result(TEST_STRDUP, strings_to_cmp);
 
-		PRINT_STR("----------------------------------------");
-		PRINT_STR(strcpy(dst, argv[1]));
-		PRINT_STR(dst);
-		PRINT_STR("----------------------------------------");
-		PRINT_STR(ft_strcpy(dst, argv[1]));
-		PRINT_STR(dst);
-		PRINT_STR("----------------------------------------");*/
-
-		/* ft_strcmp - strcmp comparison */
-		/*PRINT_INT(strcmp(argv[1], dst));
-		PRINT_INT(ft_strcmp(argv[1], dst));
-		PRINT_STR("----------------------------------------");
-		PRINT_INT(strcmp(dst, &argv[1][2]));
-		PRINT_INT(ft_strcmp(dst, &argv[1][2]));
-		PRINT_STR("----------------------------------------");
-		PRINT_INT(strcmp(&argv[1][1], dst));
-		PRINT_INT(ft_strcmp(&argv[1][1], dst));
-		PRINT_STR("----------------------------------------");*/
-
-		/* ft_strdup - strdup comparison */
-		/*char *dup_base = strdup(argv[1]);
-		char *dup_ft = ft_strdup(argv[1]);
-
-		PRINT_STR(dup_base);
-		PRINT_STR(dup_ft);
-		PRINT_STR("----------------------------------------");
-
-		free(dup_base);
-		free(dup_ft);*/
-
-		/* ft_write - write comparison */
-		/*errno = 0;
-		PRINT_INT((int)write(1, dst, len_ft_strlen));
-		PRINT_INT(errno);
-		PRINT_STR(strerror(errno));
-		PRINT_STR("----------------------------------------");
-		errno = 0;
-		PRINT_INT((int)ft_write(1, dst, len_ft_strlen));
-		PRINT_INT(errno);
-		PRINT_STR(strerror(errno));
-		PRINT_STR("----------------------------------------");
-
-		errno = 0;
-		PRINT_INT((int)write(1, dst, -10));
-		PRINT_INT(errno);
-		PRINT_STR(strerror(errno));
-		PRINT_STR("----------------------------------------");
-		errno = 0;
-		PRINT_INT((int)ft_write(1, dst, -10));
-		PRINT_INT(errno);
-		PRINT_STR(strerror(errno));
-		PRINT_STR("----------------------------------------");
-
-		errno = 0;
-		PRINT_INT((int)write(-1, dst, len_ft_strlen));
-		PRINT_INT(errno);
-		PRINT_STR(strerror(errno));
-		PRINT_STR("----------------------------------------");
-		errno = 0;
-		PRINT_INT((int)ft_write(-1, dst, len_ft_strlen));
-		PRINT_INT(errno);
-		PRINT_STR(strerror(errno));
-		PRINT_STR("----------------------------------------");
-
-		errno = 0;
-		PRINT_INT((int)write(1, NULL, len_ft_strlen));
-		PRINT_INT(errno);
-		PRINT_STR(strerror(errno));
-		PRINT_STR("----------------------------------------");
-		errno = 0;
-		PRINT_INT((int)ft_write(1, NULL, len_ft_strlen));
-		PRINT_INT(errno);
-		PRINT_STR(strerror(errno));
-		PRINT_STR("----------------------------------------");*/
-
-		errno = 0;
-		int		fd = open("./Makefile", O_RDONLY);
-		PRINT_INT(read_file(fd, 1));
-		PRINT_INT(errno);
-		PRINT_STR(strerror(errno));
-		PRINT_STR(VERSION);
-		PRINT_STR("-------- READ --------------------------");
-		close(fd);
-		errno = 0;
-		fd = open("./Makefile", O_RDONLY);
-#define LIBASM
-		PRINT_INT(read_file(fd, 1));
-		PRINT_INT(errno);
-		PRINT_STR(strerror(errno));
-		PRINT_STR(VERSION);
-		PRINT_STR("----- FT_READ --------------------------");
-		close(fd);
-		errno = 0;
-#undef LIBASM
-		PRINT_INT(read_file(177, 1));
-		PRINT_INT(errno);
-		PRINT_STR(strerror(errno));
-		PRINT_STR(VERSION);
-		PRINT_STR("-------- READ --------------------------");
-		errno = 0;
-#define LIBASM
-		PRINT_INT(read_file(177, 1));
-		PRINT_INT(errno);
-		PRINT_STR(strerror(errno));
-		PRINT_STR(VERSION);
-		PRINT_STR("----- FT_READ --------------------------");
-#undef LIBASM
-		errno = 0;
-		fd = open("./Makefile", O_RDONLY);
-		PRINT_INT(read_file(fd, 177));
-		PRINT_INT(errno);
-		PRINT_STR(strerror(errno));
-		PRINT_STR(VERSION);
-		PRINT_STR("-------- READ --------------------------");
-		close(fd);
-#define LIBASM
-		errno = 0;
-		fd = open("./Makefile", O_RDONLY);
-		PRINT_INT(read_file(fd, 177));
-		PRINT_INT(errno);
-		PRINT_STR(strerror(errno));
-		PRINT_STR(VERSION);
-		PRINT_STR("----- FT_READ --------------------------");
-		close(fd);
-#undef LIBASM
-	/*	size_t	len = 5;
-		char	test_read[5] = {0};
-		char	test_ft_read[5] = {0};
-
-		errno = 0;
-		PRINT_INT((int)read(0, test_read, len));
-		PRINT_INT(errno);
-		PRINT_STR(strerror(errno));
-		PRINT_STR(test_read);
-		PRINT_STR("----------------------------------------");
-		errno = 0;
-		PRINT_INT((int)ft_read(0, test_ft_read, len));
-		PRINT_INT(errno);
-		PRINT_STR(strerror(errno));
-		PRINT_STR(test_ft_read);
-		PRINT_STR("----------------------------------------"); 
-
-		errno = 0;
-		PRINT_INT((int)read(-1, test_read, len));
-		PRINT_INT(errno);
-		PRINT_STR(strerror(errno));
-		PRINT_STR(test_read);
-		PRINT_STR("----------------------------------------");
-		errno = 0;
-		PRINT_INT((int)ft_read(-1, test_ft_read, len));
-		PRINT_INT(errno);
-		PRINT_STR(strerror(errno));
-		PRINT_STR(test_ft_read);
-		PRINT_STR("----------------------------------------");
-
-		errno = 0;
-		PRINT_INT((int)read(0, test_read, -10));
-		PRINT_INT(errno);
-		PRINT_STR(strerror(errno));
-		PRINT_STR(test_read);
-		PRINT_STR("----------------------------------------");
-		errno = 0;
-		PRINT_INT((int)ft_read(0, test_ft_read, -10));
-		PRINT_INT(errno);
-		PRINT_STR(strerror(errno));
-		PRINT_STR(test_ft_read);
-		PRINT_STR("----------------------------------------");
-
-		errno = 0;
-		PRINT_INT((int)read(0, NULL, len));
-		PRINT_INT(errno);
-		PRINT_STR(strerror(errno));
-		PRINT_STR(test_read);
-		PRINT_STR("----------------------------------------");
-		errno = 0;
-		PRINT_INT((int)ft_read(0, NULL, len));
-		PRINT_INT(errno);
-		PRINT_STR(strerror(errno));
-		PRINT_STR(test_ft_read);
-		PRINT_STR("----------------------------------------");*/
-	//	free(dst);
+		print_result(TEST_WRITE, "./Makefile");
 #endif
 
 #ifdef BONUS
+		char ***atoi_base_tests_datas = {
+			{"123", "0123456789"},// -> 123
+			{"123", "0123456789ABCDEF"},// -> 291
+			{"7B", "0123456789ABCDEF"},// -> 123
+			{"123", "01"},// -> 0, 2 et 3 ne font pas partie de la base
+			{"1111011", "01"},// -> 123
+			{"                     123", "0123456789ABCDEF"},// -> 291
+			{"                     ---+--+123", "0123456789ABCDEF"},// -> -291
+			{"123", "0123456A89ABCDEF"},// -> 0, 2 fois le m char
+			{"123", "1"},// -> 0, base < 2
+			{"--******** ++-----   123", "0123456789ABCDEF"},// 0, car * non autorié
+			{"123", "0123456a89ABCDEF"},// 291
+			{"3aa", "0123456a89ABCDEF"},// 887
+			{"887", "0123456a89ABCDEF"},// -> 0, normal 7 n'est pas dans la base, et
+										// je considere a et A differents sans precision
+										// info sup dans le sujet
+			{"2147483647", "0123456789"},// INT_MAX
+			{"7FFFFFFF", "0123456789ABCDEF"},
+			{"01111111111111111111111111111111", "01"},
+			{"2147483648", "0123456789"},// overflow INT_MAX
+			{"80000000", "0123456789ABCDEF"},
+			{"10000000000000000000000000000000", "01"},
+			{"-2147483647", "0123456789"},// INT_MIN
+			{"-7FFFFFFF", "0123456789ABCDEF"},
+			{"01111111111111111111111111111111", "01"},
+			{"-2147483648", "0123456789"},// -INT_MAX
+			{"-80000000", "0123456789ABCDEF"},
+			{"-10000000000000000000000000000000", "01"},
+			{"-1111111111111111", "1"},// -> 0, car base < 2
+			NULL
+		};
 	/*	BONUS_STR(BONUS);
 		BONUS_STR("----------------------------------------");
 		BONUS_INT((int)ft_atoi_base("123", "0123456789"));	// -> 123
