@@ -12,9 +12,15 @@
 
 section		.text
 
+%ifndef MACOSX
+global		ft_strlen ; On definit et rend accessible ft_strlen, les noms de fonctions doivent commencer par _ sous MacOSX
+
+ft_strlen:						; ft_strlen
+%else
 global		_ft_strlen ; On definit et rend accessible ft_strlen, les noms de fonctions doivent commencer par _ sous MacOSX
 
 _ft_strlen:						; ft_strlen
+%endif
 ; prolog
 	push	rbp					; On sauvegarde ce qui peut etre dans rbp sur la stack avant de commencer qq chose
 	mov		rbp, rsp			; On fait pointer rbp sur le haut de la stack, notre stackframe commence ici

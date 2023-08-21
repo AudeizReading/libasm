@@ -13,10 +13,16 @@
 
 section .text
 
+%ifndef MACOSX
+global ft_strcmp					; On rend ft_strcmp accessible pour les programmes externes
+
+ft_strcmp:
+%else
 global _ft_strcmp					; On rend ft_strcmp accessible pour les programmes externes
 
 _ft_strcmp:
-; epilog
+%endif
+; prolog
 	push	rbp						;
 	mov		rbp, rsp				; Sauvegardes utiles
 

@@ -12,9 +12,15 @@
 
 section .text
 
+%ifndef MACOSX
+global ft_strcpy		; On rend ft_strcpy accessible pour les programmes externes
+
+ft_strcpy:
+%else
 global _ft_strcpy		; On rend ft_strcpy accessible pour les programmes externes
 
 _ft_strcpy:
+%endif
 
 ; Prolog
 	push	rbp				; Sauvegarde du contenu de rbp sur la stack

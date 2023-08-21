@@ -16,6 +16,19 @@
 ;	date:	2023-06-28 Wednesday
 
 section .text
+%ifndef MACOSX
+extern	ft_strlen
+extern	ft_strcpy
+extern	malloc
+
+global	ft_strdup
+
+; Ce sont les fonctions externes dont on aura besoin
+; malloc est une fonction autorisée par le sujet
+; j'ai reutilisé mon travail pour gagner un peu de temps
+
+ft_strdup:
+%else
 extern	_ft_strlen
 extern	_ft_strcpy
 extern	_malloc
@@ -27,6 +40,7 @@ global	_ft_strdup
 ; j'ai reutilisé mon travail pour gagner un peu de temps
 
 _ft_strdup:
+%endif
 ; prolog
 	push	rbp						;
 	mov		rbp, rsp				; Sauvegardes utiles
@@ -35,13 +49,21 @@ _ft_strdup:
 	mov		[rbp - 16], rdi			; Recup de s sur la stack
 
 	mov		rdi, [rbp - 16]			; On place s dans rdi afin de le passer en param a ft_strlen
+%ifndef MACOSX
+	call	ft_strlen				; appel a ft_strlen, retour de la taille de s dans rax
+%else
 	call	_ft_strlen				; appel a ft_strlen, retour de la taille de s dans rax
+%endif
 	add		rax, 1					; On ajoute 1 a la valeur contenue dans rax (cette fois c'est une valeur et non
 									; une adresse), c'est la taille pour le 0 final
 	mov		[rbp - 24], rax			; Sauvegarde de la valeur de len sur la stack
-
 	mov		rdi, [rbp - 24]			; On place len dans rdi afin de le passer a malloc
+
+%ifndef MACOSX
+	call	malloc wrt ..plt		; appel a malloc, le retour est mis dans rax https://www.nasm.us/xdoc/2.11.08/html/nasmdoc7.html#section-7.9.3
+%else
 	call	_malloc					; appel a malloc, le retour est mis dans rax
+%endif
 	mov		[rbp - 32], rax			; Sauvegarde du retour de malloc sur la stack
 	cmp		rax, 0					; On checke si malloc a retourné 0 
 	jne		copy_datas				; Si non (tout est OK), on va au label de copie des datas
@@ -52,7 +74,11 @@ _ft_strdup:
 copy_datas:
 	mov		rdi, [rbp - 32]			; On place notre var locale copy dans le registre rdi pr call ft_strcpy
 	mov		rsi, [rbp - 16]			; On place l'argument s dans le registre rsi pr call ft_strcpy
+%ifndef MACOSX
+	call	ft_strcpy				; appel a strcpy
+%else
 	call	_ft_strcpy				; appel a strcpy
+%endif
 	mov		rax, [rbp - 32]			; Sauvegarde de copy dans rax
 	mov		rcx, [rbp - 24]			; On recup len dans rcx
 	mov		byte [rax + rcx], 0		; copy[len] = 0
