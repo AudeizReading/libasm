@@ -1,5 +1,7 @@
 */*.o
 minilibft/*
 .*.sw[op]
-test
+*/.*.sw[op]
+libasm_tester
 a.out
+*/*.output
