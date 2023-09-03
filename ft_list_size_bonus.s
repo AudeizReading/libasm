@@ -15,9 +15,15 @@
 
 section	.text
 
+%ifndef MACOSX
+global	ft_list_size
+
+ft_list_size:
+%else
 global	_ft_list_size
 
 _ft_list_size:
+%endif
 	push	rbp
 	mov		rbp, rsp
 

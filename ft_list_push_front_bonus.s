@@ -20,10 +20,17 @@
 
 section	.text
 
+%ifndef MACOSX
+global	ft_list_push_front
+extern	malloc
+
+ft_list_push_front:
+%else
 global	_ft_list_push_front
 extern	_malloc
 
 _ft_list_push_front:
+%endif
 	push	rbp		;
 	mov		rbp, rsp
 	sub		rsp, 32	; resa 32 bytes : params begin_list && data + struct sur 16 bytes (struct contenant 2
@@ -32,7 +39,11 @@ _ft_list_push_front:
 	mov		[rbp - 8], rdi		;	recup begin_list
 	mov		[rbp - 16], rsi		;	recup data
 	mov		edi, 16				;	16 => sizeof(t_list) préparer comme 1er arg pour malloc
+%ifndef MACOSX
+	call	malloc wrt ..plt	;	on malloc la memoire pr une struct t_list tmp
+%else
 	call	_malloc				;	on malloc la memoire pr une struct t_list tmp
+%endif
 	mov		[rbp - 24], rax		; sauvegarde du resultat malloc tmp sur la stack
 	cmp		qword [rbp - 24], 0	; si malloc a réussi (si t_list == 0)
 	jne		.init_internal_pointers		; go init la struct t_list

@@ -26,9 +26,15 @@
 
 section	.text
 
+%ifndef MACOSX
+global	ft_list_sort
+
+ft_list_sort:
+%else
 global	_ft_list_sort
 
 _ft_list_sort:
+%endif
 	push	rbp
 	mov		rbp, rsp
 	sub		rsp, 48		; resa 48 bytes sur la stack (begin_list, tmp, swap, le pointeur de fonction)

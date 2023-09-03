@@ -81,7 +81,7 @@ copy_datas:
 %endif
 	mov		rax, [rbp - 32]			; Sauvegarde de copy dans rax
 	mov		rcx, [rbp - 24]			; On recup len dans rcx
-	mov		byte [rax + rcx], 0		; copy[len] = 0
+	mov		byte [rax + rcx - 1], 0	; copy[len - 1] = 0
 
 	mov		rax, [rbp - 32]			; Recuperation de copy dans rax
 	mov		[rbp - 8], rax			; pour le positionner sur la case retour de la stack

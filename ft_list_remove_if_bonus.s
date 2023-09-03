@@ -29,10 +29,17 @@
 
 section	.text
 
+%ifndef MACOSX
+global	ft_list_remove_if
+extern	free
+
+ft_list_remove_if:
+%else
 global	_ft_list_remove_if
 extern	_free
 
 _ft_list_remove_if:
+%endif
 	push	rbp		
 	mov		rbp, rsp
 	sub		rsp, 48								; resa 48 bytes sur la stack
@@ -78,7 +85,11 @@ _ft_list_remove_if:
 	call	rax									; apl de la fn free sur tmp->data
 
 	mov		rdi, qword [rbp - 40]				; tmp pour arg a free		
+%ifndef MACOSX
+	call	free wrt ..plt								; apl free
+%else
 	call	_free								; apl free
+%endif
 
 	mov		rax, qword [rbp - 48]				; recup de tmp->next
 	mov		qword [rbp - 40], rax				; tmp = tmp->next
@@ -103,10 +114,18 @@ _ft_list_remove_if:
 	mov		rax, qword [rbp - 32]				; recup fn free
 	mov		rcx, qword [rbp - 40]				; recup tmp->data
 	mov		rdi, qword [rcx]					; prep pr arg de la fn free
+;%ifndef MACOSX
+;	call	[rax]									; apl fn free sur tmp->data
+;%else
 	call	rax									; apl fn free sur tmp->data
+;%endif
 
 	mov		rdi, qword [rbp - 40]				; recup tmp
+%ifndef MACOSX
+	call	free wrt ..plt						; free tmp
+%else
 	call	_free								; free tmp
+%endif
 
 	mov		rax, qword [rbp - 48]				; recup prev node
 	mov		qword [rbp - 40], rax				; rattachement a tmp => tmp = prev
