@@ -39,6 +39,7 @@ endif
 ################################################################################
 
 NAME = libasm.a
+TESTER = libasm_tester
 SRCS = $(addprefix ft_, $(addsuffix .s, \
 			strlen\
 			strcpy\
@@ -49,26 +50,58 @@ SRCS = $(addprefix ft_, $(addsuffix .s, \
 	   ))
 OBJS = $(SRCS:.s=.o)
 
-#BONUS_SRCS = $(addprefix ft_, $(addsuffix _bonus.s, \
-#			atoi_base\
-#			list_push_front\
-#			list_size\
-#			list_sort\
-#			list_remove_if\
-#	   ))
 BONUS_SRCS = $(addprefix ft_, $(addsuffix _bonus.s, \
 			atoi_base\
+			list_push_front\
+			list_size\
+			list_sort\
+			list_remove_if\
 	   ))
 BONUS_OBJS = $(BONUS_SRCS:.s=.o)
 
-TEST_SRCS = main.c 
+TEST_SRCS_PATH = tester/srcs/
+TEST_SRCS_LL_PATH = tester/srcs/linked_list/
+TEST_HDRS_PATH = tester/includes/
+TEST_HDRS = $(addprefix $(TEST_HDRS_PATH), $(addsuffix .h, \
+				libasm_tester\
+			))
+TEST_INCL_FLAGS = -I $(TEST_HDRS_PATH)
+TEST_LD_FLAGS = -L $(TEST_HDRS_PATH) 
+TEST_SRCS = $(addprefix $(TEST_SRCS_PATH), $(addsuffix .c, \
+				tests_strlen\
+				tests_strcpy\
+				tests_strcmp\
+				tests_strdup\
+				tests_read_write\
+				tests_ft_atoi_base\
+				tests_ft_list_push_front\
+				tests_ft_list_size\
+				tests_ft_list_sort\
+				tests_ft_list_remove_if\
+				tests_maker\
+				compare_file\
+				main\
+			)) $(addprefix $(TEST_SRCS_PATH)ft_, $(addsuffix .c, \
+				split\
+				atoi_base\
+				read_file\
+			)) $(addprefix $(TEST_SRCS_LL_PATH)ft_, $(addsuffix .c, \
+				create_elem\
+				list_push_front\
+				list_size\
+				list_sort\
+				list_remove_if\
+			))
 TEST_OBJS = $(TEST_SRCS:.c=.o)
 
 bonus_rule = all
 regular_size=70
 ifdef BONUS
 	OBJS += $(BONUS_OBJS)
-	compil_options += -Wno-deprecated-non-prototype -DBONUS="\"C\'est la bonus party\""
+	compil_options += -DBONUS="\"C\'est la bonus party\""
+ifeq (${arch},Darwin)
+	compil_options += -Wno-deprecated-non-prototype
+endif
 	bonus_rule = bonus
 	regular_size=120
 	_bonus = bonus
@@ -89,6 +122,14 @@ all: $(NAME)
 $(NAME): $(OBJS)
 	@$(echo) " *** Creating archive: \t\t$(gre)%30.30s$(raz)\n\t$(gre)%-$(regular_size).$(regular_size)s$(raz)\n\r" "$@ $(_bonus)" "$?"
 	@$(ar) $(archive_options) $@ $?
+
+# $(as): 					commande assembleur, ici nasm
+# $(format): 				si Linux => elf64, si MACOSX => macho64
+# $(warning_options):		-Wall -Werror (-Wextra does not work with nasm)
+# $<						name of the first prerequisite
+%.o: %.s 
+	@$(echo) " *** Creating object files:\t$(cya)%30.30s$(raz)\n\r" "$(<:.s=.o)"
+	@$(as) $(format) $(warning_options) $< -o $(<:.s=.o)
 
 clean:
 	@$(echo) " *** Deleting object files:\n\t$(mag)%-70.70s$(raz)\n\r" "$(OBJS)"
@@ -117,27 +158,30 @@ bonus:
 #                                                                              #
 ################################################################################
 
-test: fclean_test $(bonus_rule) $(TEST_SRCS) 
-	@$(echo) " *** Starting testing: \t\t$(blu)%30.30s$(raz)\n\r" "$(NAME) $(_bonus)"
-	@$(cc) $(compil_options) $(TEST_SRCS) -L . -lasm -o $@
-# regular
-	@./$@ "Solutions nearly always come from the direction you least expect, which means there's no point trying to look in that direction because it won't be coming from there."
-	@$(make) fclean_test
-	@$(make) $(bonus_rule)
-	@$(cc) $(compil_options) -DLIBASM $(TEST_SRCS) -L . -lasm -o $@
+ARGV1 = "Solutions nearly always come from the direction you least expect, which means there's no point trying to look in that direction because it won't be coming from there."
+test: fclean_test $(bonus_rule) $(TEST_SRCS) $(TEST_HDRS)
+	@$(echo) " *** Starting testing: \t\t$(blu)%30.30s$(raz)\n\r" "$(NAME) $(_bonus) - $(TESTER)"
 # libasm
-	@./$@ "Solutions nearly always come from the direction you least expect, which means there's no point trying to look in that direction because it won't be coming from there."
+	@$(echo) " *** $(blu)PHASE ONE: $(blu)%-70.70s$(raz)\n\r" "Apply $(NAME) $(_bonus) functions on the tester"
+	@$(cc) $(compil_options) -DPHASE_ONE -DLIBASM $(TEST_SRCS) $(TEST_INCL_FLAGS) $(TEST_LD_FLAGS) -L . -lasm -o $(TESTER)
+	@./$(TESTER) ${ARGV1}
+#	valgrind --leak-check=full --show-leak-kinds=all ./$(TESTER) ${ARGV1}
+	@$(make) fclean_test
+# regular
+	@$(echo) " *** $(blu)PHASE ONE: $(blu)%-70.70s$(raz)\n\r" "Apply libc functions (or hardcoded functions for bonus) on the tester"
+	@$(cc) $(compil_options) -DPHASE_ONE $(TEST_SRCS) $(TEST_INCL_FLAGS) $(TEST_LD_FLAGS) -o $(TESTER)
+	@./$(TESTER) ${ARGV1}
+#	valgrind --leak-check=full --show-leak-kinds=all ./$(TESTER) ${ARGV1}
+	@$(make) fclean_test
+	@$(echo) " *** $(blu)PHASE TWO: $(blu)%-70.70s$(raz)\n\r" "Interpret results $(NAME) $(_bonus)"
+	@$(cc) $(compil_options) -DPHASE_TWO $(TEST_SRCS) $(TEST_INCL_FLAGS) $(TEST_LD_FLAGS) -o $(TESTER)
+	@./$(TESTER)
+	@$(rm) tester/assets/{ft_outputs,regular_outputs}/{strlen,strcmp,strcpy,strdup,reawri,pushll,sizell,sortll,remvll,atoi_b}.output
 
 test_bonus:
 	@$(make) test BONUS=1
 
-fclean_test: fclean_bonus
-	@${rm} test $(TEST_OBJS)
-
-# $(as): 					commande assembleur, ici nasm
-# $(format): 				si Linux => elf64, si MACOSX => macho64
-# $(warning_options):		-Wall -Werror (-Wextra does not work with nasm)
-# $<						name of the first prerequisite
-%.o: %.s 
-	@$(echo) " *** Creating object files:\t$(cya)%30.30s$(raz)\n\r" "$(<:.s=.o)"
-	@$(as) $(format) $(warning_options) $< -o $(<:.s=.o)
+fclean_test:
+	@if [ -f $(NAME) ]; then make fclean_bonus; fi
+	@$(echo) " *** Deleting tester\t\t$(red)%30.30s$(raz)\n\r" "$(TESTER)"
+	@${rm} $(TESTER) $(TEST_OBJS) $(TESTER).dSYM
