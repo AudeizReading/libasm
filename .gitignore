@@ -2,6 +2,10 @@
 minilibft/*
 .*.sw[op]
 */.*.sw[op]
+*/*/.*.sw[op]
+*/*/*/.*.sw[op]
 libasm_tester
 a.out
 */*.output
+*/*/*.output
+*/*/*/*.output
