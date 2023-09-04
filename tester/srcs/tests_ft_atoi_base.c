@@ -4,7 +4,7 @@
 /*
 ** Resultat:
 ** __FILE__:__LINE__:VERSION:VERSION_ATOI_B:
-** __FILE__:__LINE__:idx_test:retour_atoi_base:str_to_atoi:base_atoir:valeur_attendue:
+** __FILE__:__LINE__:idx_test:retour_atoi_base:str_to_atoi:base_atoi:valeur_attendue:
 */
 void							tests_atoi_base() {
 	char *atoi_base_tests_datas[42][2] = {
