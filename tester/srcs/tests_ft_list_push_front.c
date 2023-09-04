@@ -45,6 +45,10 @@ void	tests_ft_list_push_front(t_list **begin, char *str_to_split) {
 	assert(STRCMP(first, back_list_val) == 0);
 	assert(STRCMP(last, front_list_val) == 0);
 	PRINT_TEST(fd, "%s:%d:%d:%s:%s:%s:%s:\n", "final_assert", last_index, size_check, back_list_val, front_list_val, first, last);
+	free(first);
+	free(last);
+	free(back_list_val);
+	free(front_list_val);
 	close(fd);
 }
 #endif // BONUS

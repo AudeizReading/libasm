@@ -13,6 +13,8 @@ cya = \033[1;36m
 raz = \033[0m
 
 arch = $(shell uname)
+author = alellouc
+campus = 42 Nice
 as = nasm
 cc = gcc
 rm = rm -rf
@@ -85,6 +87,7 @@ TEST_SRCS = $(addprefix $(TEST_SRCS_PATH), $(addsuffix .c, \
 				split\
 				atoi_base\
 				read_file\
+				free_char_array\
 			)) $(addprefix $(TEST_SRCS_LL_PATH)ft_, $(addsuffix .c, \
 				create_elem\
 				list_push_front\
@@ -103,7 +106,7 @@ ifeq (${arch},Darwin)
 	compil_options += -Wno-deprecated-non-prototype
 endif
 	bonus_rule = bonus
-	regular_size=120
+	regular_size=200
 	_bonus = bonus
 endif
 ################################################################################
@@ -165,18 +168,19 @@ test: fclean_test $(bonus_rule) $(TEST_SRCS) $(TEST_HDRS)
 	@$(echo) " *** $(blu)PHASE ONE: $(blu)%-70.70s$(raz)\n\r" "Apply $(NAME) $(_bonus) functions on the tester"
 	@$(cc) $(compil_options) -DPHASE_ONE -DLIBASM $(TEST_SRCS) $(TEST_INCL_FLAGS) $(TEST_LD_FLAGS) -L . -lasm -o $(TESTER)
 	@./$(TESTER) ${ARGV1}
-#	valgrind --leak-check=full --show-leak-kinds=all ./$(TESTER) ${ARGV1}
+	@valgrind --log-file="tester/assets/ft_outputs/leaks.output" --leak-check=full --show-leak-kinds=all ./$(TESTER) ${ARGV1}
 	@$(make) fclean_test
 # regular
 	@$(echo) " *** $(blu)PHASE ONE: $(blu)%-70.70s$(raz)\n\r" "Apply libc functions (or hardcoded functions for bonus) on the tester"
 	@$(cc) $(compil_options) -DPHASE_ONE $(TEST_SRCS) $(TEST_INCL_FLAGS) $(TEST_LD_FLAGS) -o $(TESTER)
 	@./$(TESTER) ${ARGV1}
-#	valgrind --leak-check=full --show-leak-kinds=all ./$(TESTER) ${ARGV1}
+	@valgrind --log-file="tester/assets/regular_outputs/leaks.output" --leak-check=full --show-leak-kinds=all ./$(TESTER) ${ARGV1} 
 	@$(make) fclean_test
 	@$(echo) " *** $(blu)PHASE TWO: $(blu)%-70.70s$(raz)\n\r" "Interpret results $(NAME) $(_bonus)"
 	@$(cc) $(compil_options) -DPHASE_TWO $(TEST_SRCS) $(TEST_INCL_FLAGS) $(TEST_LD_FLAGS) -o $(TESTER)
-	@./$(TESTER)
-	@$(rm) tester/assets/{ft_outputs,regular_outputs}/{strlen,strcmp,strcpy,strdup,reawri,pushll,sizell,sortll,remvll,atoi_b}.output
+	@./$(TESTER) "$(author)" "$(campus)"
+#	valgrind --leak-check=full --show-leak-kinds=all ./$(TESTER)
+	@$(rm) tester/assets/{ft_outputs,regular_outputs}/{strlen,strcmp,strcpy,strdup,reawri,pushll,sizell,sortll,remvll,atoi_b,leaks}.output
 
 test_bonus:
 	@$(make) test BONUS=1

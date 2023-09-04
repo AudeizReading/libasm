@@ -37,6 +37,8 @@ void	tests_ft_list_sort(t_list **begin, char *str_to_split) {
 			assert(STRCMP((char *)p_list->data, (char *)p_list->next->data) <= 0);
 		PRINT_TEST(fd, "%d:%s:%s:%d:\n", i , (char *)p_list->data, ((p_list->next)?(char *)p_list->next->data : ""), ((p_list->next)?STRCMP((char *)p_list->data, (char *)p_list->next->data) < 0 : -1));
 	}
+	for (int i = 0; vals[i]; free(vals[i]), i++);
+	free(vals);
 	close(fd);
 }
 #endif // BONUS

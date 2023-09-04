@@ -428,3 +428,73 @@ dans la libC, car elles ont un intérêt. Elles ont surtout été codées par de
     `ft_write/ft_read` (si vous avez l'un, vous avez l'autre) permet de synthétiser les notions, voir les appels
     aux syscalls et s'amuser avec errno, dont la gestion est un peu tordue -> MacOSX ne suit pas l'ABI et
     procède légèrement différemment que Linux à ce niveau. Mais l'info se trouve, avec un peu de recherches...
+
+## Mise à jour
+
+Un chamboulement dans la situation de mon campus m'a imposé de revoir ce projet complètement pour `Ubuntu 20.04` alors
+qu'il était quasiment fini pour `Mac`. 
+
+J'ai souhaité conserver quand même la version `Mac` du projet, j'ai donc adapté le code assembleur grâce à des macros. Il n'y a pas
+de grosses différences entre les deux plateformes, mais suffisamment pour que le projet Mac ne soit pas compatible dans
+un environnement Linux.
+Les principales différences sont:
+- Les noms de fonctions: Ils doivent préfixés par `_` sous `MacOSX` et absolument pas sous `Ubuntu`.
+- Les appels systèmes: La table n'est pas la même selon la plateforme. Mais je l'avais déjà mentionné plus haut.
+- La gestion des erreurs:
+    - `MacOSX` ne suit pas l'ABI (les erreurs sont
+        positives) alors que Linux si (les erreurs sont négatives, donc il faut inverser la valeur pour set correctement
+            errno).
+    - Les appels systèmes sont différent: `___error` pour `MacOSX` et `__errno_location wrt ..plt`.
+- La gestion des liaisons (linkage) et des positions en mémoire. Je n'avais pas du tout compris dans l'énoncé l'interdiction d'utiliser l'option `-no-pie`:
+`MacOSX` gère cela tout seul. En revanche, ce n'est pas la même histoire sous `Ubuntu` et ELF. Le code ne compilera pas sans
+cette option! À moins que... il ne faille rajouter l'instruction `wrt ..plt` après certains appels comme un appel à
+`malloc`... [explication NASM](https://nasm.us/doc/nasmdoc8.html#section-8.9.3) - [explication NASM](https://nasm.us/doc/nasmdo10.html#section-10.2.5).
+
+### Testeur
+
+Comme demandé par l'énoncé, un testeur est fourni. C'est un peu plus conséquent qu'un `main` de test, en revanche
+l'exécutable est capable de tester en version mandatory ou bonus et de comparer avec des fonctions de réferences.  
+On peut le vérifier dans le Makefile: La version de référence du test est compilé sans `libasm`.
+
+Le testeur ne distingue pas quels bonus sont faits: c'est soit tous, soit aucun; c'est une solution de facilité de ma
+part.
+
+- Pour compiler la `libasm`:
+    ```shell
+    make
+    ```
+    ou
+    ```shell
+    make libasm.a
+    ```
+    ou encore 
+    ```shell
+    make all
+    ```
+- Pour compiler la `libasm` version bonus:
+    ```shell
+    make bonus
+    ```
+    Seuls les fichiers sources bonus sont compilés et ajoutés si `libasm` existe déjà.  
+    Si `libasm` n'existe pas, évidemment tout est compilé: mandatory + bonus.
+- Pour lancer le test sur la partie madatory:
+    ```shell
+    make test
+    ```
+- Pour lancer le test sur la partie mandatory **ET** la partie bonus:
+    ```shell
+    make test_bonus
+    ```
+- Pour nettoyer:
+    - `libasm`:
+        ```shell
+        make fclean
+        ```
+    - bonus:
+        ```shell
+        make fclean_bonus
+        ```
+    - Le testeur:
+        ```shell
+        make fclean_test
+        ```

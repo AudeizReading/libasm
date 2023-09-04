@@ -1,5 +1,4 @@
 #include "libasm_tester.h"
-//#include "../../includes/libasm_tester.h"
 
 #ifdef BONUS
 void							ft_list_sort(t_list **begin_list, int (*cmp)()) {

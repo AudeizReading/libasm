@@ -27,41 +27,57 @@ int main(int argc, char **argv) {
 	};
 		
 		select_test(TEST_STRLEN, strings_to_test);
-
 		select_test(TEST_STRCPY, strings_to_test);
-		
 		select_test(TEST_STRCMP, strings_to_test, strings_to_cmp);
-
 		select_test(TEST_STRDUP, strings_to_cmp);
-
 		select_test(TEST_WRITE, FILE_TEST_WRITE);
 # ifdef BONUS
-		select_test(TEST_ATOI_BASE);
-
 		t_list	*begin = NULL;
 
 		select_test(TEST_FT_LIST_PUSH_FRONT, &begin, argv[1]);
-
 		select_test(TEST_FT_LIST_SIZE, &begin);
-
 		select_test(TEST_FT_LIST_SORT, &begin, argv[1]);
-
 		select_test(TEST_FT_LIST_REMOVE_IF, &begin);
+		select_test(TEST_ATOI_BASE);
 
+		if (begin)
+			free(begin);
 # endif
 		return 0;
 	}
-#endif
+#endif // PHASE_ONE
 #ifdef	PHASE_TWO
-	if (argc == 1) {
-		(void)argv;
-		char *title = read_file(FILE_TITLE);
-		PRINT_TEST(1, "%s\t%s\n", title, EXPAND_STRINGIFY(title));
+	if (argc == 3) {
+		char	*author = strdup(argv[1]);
+		char	*campus = strdup(argv[2]);
+		char	*title = read_file(FILE_TITLE);
+# ifdef BONUS
+		printf("%s%60.60s%s\n\n", COLOR_RES, BONUS, RESET);
+# endif // BONUS
+		printf("%s%s\n%30.30s - %-30.30s\n%45.45s%s\n\n", COLOR_RES, title, author, campus, __DATE__, RESET);
+		//PRINT_TEST(1, "%s\t%s\n", title, EXPAND_STRINGIFY(title));
 
-		compare_files(REG_STRLEN, FT_STRLEN);
+		int		idx_test = 1;
+		compare_files(TEST_STRLEN, REG_STRLEN, FT_STRLEN, &idx_test);
+		compare_files(TEST_STRCPY, REG_STRCPY, FT_STRCPY, &idx_test);
+		compare_files(TEST_STRCMP, REG_STRCMP, FT_STRCMP, &idx_test);
+		compare_files(TEST_STRDUP, REG_STRDUP, FT_STRDUP, &idx_test);
+		compare_files(TEST_WRITE, REG_REAWRI, FT_REAWRI, &idx_test);
+
+# ifdef BONUS
+		compare_files(TEST_FT_LIST_PUSH_FRONT, REG_PUSHFL, FT_PUSHFL, &idx_test);
+		compare_files(TEST_FT_LIST_SIZE, REG_SIZELL, FT_SIZELL, &idx_test);
+		compare_files(TEST_FT_LIST_SORT, REG_SORTLL, FT_SORTLL, &idx_test);
+		compare_files(TEST_FT_LIST_REMOVE_IF, REG_REMVLL, FT_REMVLL, &idx_test);
+		compare_files(TEST_ATOI_BASE, REG_ATOI_B, FT_ATOI_B, &idx_test);
+# endif // BONUS
+		compare_files(TEST_LEAKS, REG_LEAKS, FT_LEAKS, &idx_test);
+		free(author);
+		free(campus);
 		free(title);
+
 		return 0;
 	}
-#endif
+#endif // PHASE_TWO
 	return 1;
 }

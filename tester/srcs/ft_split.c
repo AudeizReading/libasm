@@ -1,6 +1,6 @@
 #include "libasm_tester.h"
 
-static char	*ft_substr(char const *s, unsigned int start, size_t len) {
+char	*ft_substr(char const *s, unsigned int start, size_t len) {
 	char	*dst = NULL;
 	size_t	len_s = 0;
 
@@ -85,81 +85,3 @@ char		**ft_split(char const *s, char c) {
 	}
 	return dst;
 }
-/*char							**split(char *src, char c) {
-
-	//(void)c;
-	char	**vals = NULL;
-	int		*pos = NULL;
-	char	*to_split = STRDUP(src);
-	unsigned int		nb_token = 0;
-	//int
-	for (unsigned int i = 0; i < STRLEN(to_split); ++i) {
-		while (to_split[i] && to_split[i] != c) {
-			i++;
-		}
-		nb_token++;
-		if (i > STRLEN(to_split) - 1)
-			break;
-		while (to_split[i] && to_split[i] == c) {
-			i++;
-			nb_token++;
-		}
-		if (i > STRLEN(to_split) - 1)
-			break;
-		if (i == STRLEN(to_split) - 1 && to_split[i] != c)
-			nb_token++;
-		//BONUS_INT(nb_token);
-		//BONUS_INT(i);
-		//PRINT_STR("=====");
-	}
-	BONUS_INT(nb_token);
-	PRINT_STR("*****");
-	//BONUS_STR(src);
-	vals = malloc(sizeof(char *) * (nb_token + 1));
-	vals[nb_token] = 0;
-	pos = malloc(sizeof(int) * nb_token);
-
-	unsigned int j = 0;
-	for (unsigned int i = 0; i < STRLEN(to_split); ++i) {
-		if ((to_split[i] == c || i == 0) && j < nb_token) {
-			if (i == 0) {
-				pos[j++] = i;
-			} else if (to_split[i + 1] && j < nb_token){
-				pos[j++] = i + 1;
-			}
-		}
-	}
-
-	unsigned int	size_token = 0;
-	for (unsigned int i = 0; i < nb_token; ++i) {
-		if (&pos[i] && pos[i + 1] && i < nb_token - 1) {
-		//				BONUS_INT(pos[i]);
-		//				BONUS_STR(&to_split[pos[i]]);
-		//				BONUS_INT(pos[i + 1]);
-			size_token = pos[i + 1] - pos[i] - 1;
-		//				BONUS_INT(size_token);
-		}
-		else if (&pos[i] != NULL) {
-			size_token = STRLEN(to_split) - pos[i];
-		}
-		else if (pos[i] == c) {
-			size_token = 1;
-		}
-		else {
-			size_token = 0;
-		}
-		vals[i] = malloc(sizeof(char) * size_token + 1);
-		vals[i][size_token] = 0;
-		for (unsigned int k = 0; k < size_token ; k++) {
-			vals[i][k] = to_split[(int)(pos[i] + k)];
-		}
-		BONUS_INT(i);
-		BONUS_STR("[");
-		BONUS_STR(vals[i]);
-		BONUS_STR("]");
-	}
-
-	free(pos);
-	free(to_split);
-	return vals;
-}*/

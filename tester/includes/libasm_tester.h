@@ -50,6 +50,16 @@
 # define DPRINTF(fd, str, args...)	dprintf(fd, str, args);
 # define PRINT_TEST(fd, s, args...)	DPRINTF(fd, CONCAT(FILE_DATAS_FORMAT, s), __FILE__, __LINE__, args)
 
+# ifdef	PHASE_TWO
+#  ifdef BONUS
+#   define COLOR_RES					CYAN_ALT
+#  else
+#   define COLOR_RES					MAGENTA_ALT
+#  endif // BONUS
+#  define RES_FORMAT					"%3d."	COLOR_RES " %-35s" RESET ":\t%s"
+#  define PRINT_RES(id, name, res, s, args...)	printf(CONCAT(RES_FORMAT, s), id, name, res, args)
+# endif //PHASE_TWO
+
 # define OK							GREEN_ALT "[OK]" RESET
 # define KO							RED_ALT "[KO]" RESET
 
@@ -64,6 +74,7 @@
 # define TEST_STRCMP_NAME			"strcmp" OUTPUT_EXT
 # define TEST_STRDUP_NAME			"strdup" OUTPUT_EXT
 # define TEST_REAWRI_NAME			"reawri" OUTPUT_EXT
+# define TEST_LEAKS_NAME			"leaks" OUTPUT_EXT
 # ifdef BONUS
 # define TEST_PUSHFL_NAME			"pushfl" OUTPUT_EXT
 #  define TEST_SIZELL_NAME			"sizell" OUTPUT_EXT
@@ -101,11 +112,13 @@
 #  define REG_STRCMP				TEST_REGULAR_OUTPUTS_DIR TEST_STRCMP_NAME
 #  define REG_STRDUP				TEST_REGULAR_OUTPUTS_DIR TEST_STRDUP_NAME
 #  define REG_REAWRI				TEST_REGULAR_OUTPUTS_DIR TEST_REAWRI_NAME
+#  define REG_LEAKS					TEST_REGULAR_OUTPUTS_DIR TEST_LEAKS_NAME
 #  define FT_STRLEN					TEST_FT_OUTPUTS_DIR TEST_STRLEN_NAME
 #  define FT_STRCPY					TEST_FT_OUTPUTS_DIR TEST_STRCPY_NAME
 #  define FT_STRCMP					TEST_FT_OUTPUTS_DIR TEST_STRCMP_NAME
 #  define FT_STRDUP					TEST_FT_OUTPUTS_DIR TEST_STRDUP_NAME
 #  define FT_REAWRI					TEST_FT_OUTPUTS_DIR TEST_REAWRI_NAME
+#  define FT_LEAKS					TEST_FT_OUTPUTS_DIR TEST_LEAKS_NAME
 #  ifdef BONUS
 #   define REG_PUSHFL				TEST_REGULAR_OUTPUTS_DIR TEST_PUSHFL_NAME
 #   define REG_SIZELL				TEST_REGULAR_OUTPUTS_DIR TEST_SIZELL_NAME
@@ -131,7 +144,8 @@ enum e_functions {
 	TEST_FT_LIST_PUSH_FRONT,
 	TEST_FT_LIST_SIZE,
 	TEST_FT_LIST_REMOVE_IF,
-	TEST_FT_LIST_SORT
+	TEST_FT_LIST_SORT,
+	TEST_LEAKS
 }; // e_functions
 
 enum e_errors {
@@ -155,14 +169,16 @@ extern	ssize_t						ft_write(int fildes, const void *buffer, size_t iovcnt);
 extern	ssize_t						ft_read(int fildes, const void *buffer, size_t iovcnt);
 
 char								**ft_split(char const *s, char c);
+char								*ft_substr(char const *s, unsigned int start, size_t len);
 char								*read_file(char *filename);
-int									compare_files(char *filename1, char *filename2);
 void								tests_strlen(char **strs);
 void								tests_strcpy(char **strs);
 void								tests_strcmp(char **strs1, char **strs2);
 void								tests_strdup(char **strs);
 void								tests_read_and_write(char *filename);
 void								select_test(enum e_functions type_test, ...);
+int									compare_files(enum e_functions type_test, ...);
+void								ft_free_char_array(char **arr);
 
 # ifdef LIBASM // On utilise les fn de libasm
 #  define STRLEN(s)					ft_strlen(s)
