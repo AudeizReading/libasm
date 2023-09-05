@@ -144,7 +144,6 @@ FT_OUTS += $(addprefix tester/assets/ft_outputs/, $(addsuffix .output,\
 				remvll\
 				atoi_b\
 		   ))
-
 endif
 ################################################################################
 #                                                                              #
@@ -203,9 +202,9 @@ test: fclean_test $(bonus_rule) $(TEST_SRCS) $(TEST_HDRS)
 	@$(echo) " *** Starting testing: \t\t$(blu)%30.30s$(raz)\n\r" "$(NAME) $(_bonus) - $(TESTER)"
 # libasm
 	@$(echo) " *** $(blu)PHASE ONE: $(blu)%-70.70s$(raz)\n\r" "Apply $(NAME) $(_bonus) functions on the tester"
-	@$(cc) $(compil_options) -DPHASE_ONE -DLIBASM $(TEST_SRCS) $(TEST_INCL_FLAGS) $(TEST_LD_FLAGS) -L . -lasm -o $(TESTER)
+	@mkdir -p tester/assets/ft_outputs tester/assets/regular_outputs
+	$(cc) $(compil_options) -DPHASE_ONE -DLIBASM $(TEST_SRCS) $(TEST_INCL_FLAGS) $(TEST_LD_FLAGS) -L . -lasm -o $(TESTER)
 	@./$(TESTER) ${ARGV1}
-	@ mkdir -p tester/assets/ft_outputs tester/assets/regular_outputs
 	@valgrind --log-file="tester/assets/ft_outputs/leaks.output" --leak-check=full --show-leak-kinds=all ./$(TESTER) ${ARGV1}
 	@$(make) fclean_test
 # regular
