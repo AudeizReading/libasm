@@ -26,7 +26,7 @@ void	tests_ft_list_sort(t_list **begin, char *str_to_split) {
 	PRINT_TEST(fd, "%s%s:%s%s:\n", YELLOW_ALT, VERSION, VERSION_SORT_L, RESET);
 	for (int i = 1, j = last_val_idx; p_list && j >= 0; p_list = p_list->next, i++, j--) {
 		assert(STRCMP((char *)p_list->data, vals[j]) == 0);
-		PRINT_TEST(fd, "%d:%s:%s:%d:\n", i , (char *)p_list->data, vals[j], STRCMP((char *)p_list->data, vals[j]) == 0);
+		//PRINT_TEST(fd, "%d:%s:%s:%d:\n", i , (char *)p_list->data, vals[j], STRCMP((char *)p_list->data, vals[j]) == 0);
 	}
 
 	ft_list_sort(begin, _STRCMP);

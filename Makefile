@@ -29,9 +29,10 @@ archive_options = crs
 
 ifeq (${arch},Darwin)
 	format := -f macho64 -D MACOSX
+OS := -D MACOSX
 else
 	format := -f elf64 -D LINUX 
-	 
+OS := -D LINUX
 endif
 
 ################################################################################
@@ -97,6 +98,26 @@ TEST_SRCS = $(addprefix $(TEST_SRCS_PATH), $(addsuffix .c, \
 			))
 TEST_OBJS = $(TEST_SRCS:.c=.o)
 
+REG_OUTS = $(addprefix tester/assets/regular_outputs/, $(addsuffix .output, \
+				reawri-output\
+				reawri\
+				strcmp\
+				strcpy\
+				strdup\
+				strlen\
+				leaks\
+			))
+
+FT_OUTS = $(addprefix tester/assets/ft_outputs/, $(addsuffix .output, \
+				reawri-output\
+				reawri\
+				strcmp\
+				strcpy\
+				strdup\
+				strlen\
+				leaks\
+			))
+
 bonus_rule = all
 regular_size=70
 ifdef BONUS
@@ -108,6 +129,22 @@ endif
 	bonus_rule = bonus
 	regular_size=200
 	_bonus = bonus
+REG_OUTS += $(addprefix tester/assets/regular_outputs/, $(addsuffix .output, \
+				pushfl\
+				sizell\
+				sortll\
+				remvll\
+				atoi_b\
+			))
+
+FT_OUTS += $(addprefix tester/assets/ft_outputs/, $(addsuffix .output,\
+				pushfl\
+				sizell\
+				sortll\
+				remvll\
+				atoi_b\
+		   ))
+
 endif
 ################################################################################
 #                                                                              #
@@ -177,10 +214,10 @@ test: fclean_test $(bonus_rule) $(TEST_SRCS) $(TEST_HDRS)
 	@valgrind --log-file="tester/assets/regular_outputs/leaks.output" --leak-check=full --show-leak-kinds=all ./$(TESTER) ${ARGV1} 
 	@$(make) fclean_test
 	@$(echo) " *** $(blu)PHASE TWO: $(blu)%-70.70s$(raz)\n\r" "Interpret results $(NAME) $(_bonus)"
-	@$(cc) $(compil_options) -DPHASE_TWO $(TEST_SRCS) $(TEST_INCL_FLAGS) $(TEST_LD_FLAGS) -o $(TESTER)
-	@./$(TESTER) "$(author)" "$(campus)"
+	@$(cc) $(compil_options) $(OS) -DPHASE_TWO $(TEST_SRCS) $(TEST_INCL_FLAGS) $(TEST_LD_FLAGS) -o $(TESTER)
+	@./$(TESTER) "$(author)" "$(campus)" && $(rm) -f $(REG_OUTS) $(FT_OUTS)
 #	valgrind --leak-check=full --show-leak-kinds=all ./$(TESTER)
-	@$(rm) tester/assets/{ft_outputs,regular_outputs}/{strlen,strcmp,strcpy,strdup,reawri,pushll,sizell,sortll,remvll,atoi_b,leaks}.output
+#	@$(rm) tester/assets/{ft_outputs,regular_outputs}/{strlen,strcmp,strcpy,strdup,reawri,reawri-output,pushfl,sizell,sortll,remvll,atoi_b,leaks}.output
 
 test_bonus:
 	@$(make) test BONUS=1

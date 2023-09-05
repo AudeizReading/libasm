@@ -459,6 +459,10 @@ On peut le vérifier dans le Makefile: La version de référence du test est com
 Le testeur ne distingue pas quels bonus sont faits: c'est soit tous, soit aucun; c'est une solution de facilité de ma
 part.
 
+Le testeur rencontre quelques soucis avec Valgrind si on l'utilise sous MacOSX / Ventura. Le concepteur du
+        repository [Valgrind pour Mac](https://github.com/LouisBrunner/valgrind-macos/) mentionne ces
+        désagréments pour certains OS.
+
 - Pour compiler la `libasm`:
     ```shell
     make

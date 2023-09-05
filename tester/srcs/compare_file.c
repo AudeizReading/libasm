@@ -34,7 +34,6 @@ int		compare_files(enum e_functions type_test, ...) {
 				if (strstr(ft_content, "All heap blocks were freed -- no leaks are possible") != NULL) {
 					PRINT_RES(*idx_test, "FT - check LEAKS", OK, "\t%s\n", "No Leaks.");
 				} else {
-					//PRINT_RES(*idx_test, "FT - check LEAKS", KO, "\n%s\n", strstr(ft_content, "LEAK SUMMARY") ? strstr(ft_content, "definitely lost") : "It should find leaks...");
 					PRINT_RES(*idx_test, "FT - check LEAKS", KO, "\n%s\n", strstr(ft_content, "LEAK SUMMARY") ? strstr(ft_content, "LEAK SUMMARY") : "It should find leaks...");
 				}
 			}
@@ -79,7 +78,7 @@ int		compare_files(enum e_functions type_test, ...) {
 							&& (fields == 6 && line_reg[3] && line_ft[3]) ? strcmp(line_reg[5], line_ft[5]) == 0 : line_reg[3] == NULL && line_ft[3] == NULL
 					);
 					
-					PRINT_RES(*idx_test, "FT - check value STRCPY", OK, "\tFT: [%-15.15s]\v- REG: [%-15.15s]%s\n", line_ft[3] ?  line_ft[3] : "NULL", line_reg[3] ?  line_reg[3] : "NULL", RESET);
+					PRINT_RES(*idx_test, "FT - check value STRCPY", OK, "\tFT: [%-15.15s] - REG: [%-15.15s]%s\n", line_ft[3] ?  line_ft[3] : "NULL", line_reg[3] ?  line_reg[3] : "NULL", RESET);
 
 					ft_free_char_array(line_ft);
 					ft_free_char_array(line_reg);
@@ -126,12 +125,17 @@ int		compare_files(enum e_functions type_test, ...) {
 					char **line_reg = ft_split(reg_lines[i], ':');
 					
 					(*idx_test)++;
+#ifdef MACOSX
+					if (line_ft[3]) {
+#endif					
 					assert(strcmp(line_reg[2], line_ft[2]) == 0 
 							&& (line_reg[3] && line_ft[3]) ? strcmp(line_reg[3], line_ft[3]) == 0 : line_reg[3] == NULL && line_ft[3] == NULL
 							&& (line_reg[4] && line_ft[4]) ? strcmp(line_reg[4], line_ft[4]) == 0 : line_reg[4] == NULL && line_ft[4] == NULL
 					);
-					
-					PRINT_RES(*idx_test, "FT - check return STRDUP", OK, "\tFT: [%-15.15s]\v- REG: [%-15.15s]%s\n", line_ft[3] ?  line_ft[3] : "NULL", line_reg[3] ?  line_reg[3] : "NULL", RESET);
+#ifdef MACOSX
+					}
+#endif					
+					PRINT_RES(*idx_test, "FT - check return STRDUP", OK, "\tFT: [%-15.15s] - REG: [%-15.15s]%s\n", line_ft[3] ?  line_ft[3] : "NULL", line_reg[3] ?  line_reg[3] : "NULL", RESET);
 
 					ft_free_char_array(line_ft);
 					ft_free_char_array(line_reg);
@@ -143,6 +147,34 @@ int		compare_files(enum e_functions type_test, ...) {
 		case TEST_READ:
 		case TEST_WRITE: {
 				check_version(*idx_test, "FT - check version READ & WRITE", ft_lines[0], reg_lines[0]);
+				// __FILE__:__LINE__:idx_test:errno:chaine_errno:error_read_ou_write:nb_bytes_lus:nb_bytes_ecrits:
+				char	*reg_output = read_file(REG_OUTPRW);
+				char	*ft_output = read_file(FT_OUTPRW);
+
+				assert(strcmp(reg_output, ft_output) == 0); // assert ce qu'on a envoyé avec write
+
+				free(reg_output);
+				free(ft_output);
+				for (int i = 1; ft_lines[i] && reg_lines[i]; i++) {
+					char **line_ft = ft_split(ft_lines[i], ':');
+					char **line_reg = ft_split(reg_lines[i], ':');
+					if (ft_lines[i + 1]) {
+						(*idx_test)++;
+						assert(strcmp(line_reg[2], line_ft[2]) == 0 
+								&& (line_reg[3] && line_ft[3]) ? strcmp(line_reg[3], line_ft[3]) == 0 : line_reg[3] == NULL && line_ft[3] == NULL
+								&& (line_reg[4] && line_ft[4]) ? strcmp(line_reg[4], line_ft[4]) == 0 : line_reg[4] == NULL && line_ft[4] == NULL
+								&& (line_reg[5] && line_ft[5]) ? strcmp(line_reg[5], line_ft[5]) == 0 : line_reg[5] == NULL && line_ft[5] == NULL
+								&& (line_reg[6] && line_ft[6]) ? strcmp(line_reg[6], line_ft[6]) == 0 : line_reg[6] == NULL && line_ft[6] == NULL
+								&& (line_reg[7] && line_ft[7]) ? strcmp(line_reg[7], line_ft[7]) == 0 : line_reg[7] == NULL && line_ft[7] == NULL
+							  );
+					PRINT_RES(*idx_test, "FT - check return READ & WRITE", OK, "\tFT: bytes: %7s ,error: %3s - REG: bytes: %7s, error: %3s\n", line_ft[6] ?  line_ft[6] : "NULL", line_ft[3] ?  line_ft[3] : "NULL", line_reg[6] ?  line_reg[6] : "NULL", line_reg[3] ?  line_reg[3] : "NULL");
+					}
+					if (!ft_lines[i + 1]) {
+						printf("\n");
+					}
+					ft_free_char_array(line_ft);
+					ft_free_char_array(line_reg);
+				}
 			}
 			break;
 #ifdef BONUS
@@ -159,7 +191,7 @@ int		compare_files(enum e_functions type_test, ...) {
 							&& (line_reg[6] && line_ft[6]) ? strcmp(line_reg[3], line_ft[6]) == 0 : line_reg[3] == NULL && line_ft[6] == NULL
 					);
 					
-					PRINT_RES(*idx_test, "FT - check return ATOI BASE", OK, "\tFT: %-10s - REG: %-10s%s\n", line_ft[3] ?  line_ft[3] : "NULL", line_reg[3] ?  line_reg[3] : "NULL", RESET);
+					PRINT_RES(*idx_test, "FT - check return ATOI BASE", OK, "\tFT: %-15.15s - REG: %-15.15s%s\n", line_ft[3] ?  line_ft[3] : "NULL", line_reg[3] ?  line_reg[3] : "NULL", RESET);
 
 					ft_free_char_array(line_ft);
 					ft_free_char_array(line_reg);
@@ -172,6 +204,37 @@ int		compare_files(enum e_functions type_test, ...) {
 				check_version(*idx_test, "FT - check version LIST PUSH FRONT", ft_lines[0], reg_lines[0]);
 				// __FILE__:__LINE__:idx_test:valeur_maillon:valeur_a_copier:
 				// __FILE__:__LINE__:final_assert:last_index_list:index_check:valeur_dernier_maillon:valeur_premier_maillon:valeur_premier_split:valeur_dernier_split:
+				for (int i = 1; ft_lines[i] && reg_lines[i]; i++) {
+					char **line_ft = ft_split(ft_lines[i], ':');
+					char **line_reg = ft_split(reg_lines[i], ':');
+
+					(*idx_test)++;
+					if (ft_lines[i + 1]) {
+						assert(strcmp(line_reg[2], line_ft[2]) == 0 
+								&& (line_reg[3] && line_ft[3]) ? strcmp(line_reg[3], line_ft[3]) == 0 : line_reg[3] == NULL && line_ft[3] == NULL
+								&& (line_reg[4] && line_ft[4]) ? strcmp(line_reg[4], line_ft[4]) == 0 : line_reg[4] == NULL && line_ft[4] == NULL
+								&& (line_reg[4] && line_ft[4]&& line_reg[3] && line_ft[3]) ? strcmp(line_ft[3], line_ft[4]) == 0 : line_ft[3] == NULL && line_ft[4] == NULL
+							  );
+
+						PRINT_RES(*idx_test, "FT - check return LIST PUSH FRONT", OK, "\tFT: %-15.15s - REG: %-15.15s%s\n", line_ft[3] ?  line_ft[3] : "NULL", line_reg[3] ?  line_reg[3] : "NULL", RESET);
+
+					} else { 
+						assert(strcmp(line_reg[2], line_ft[2]) == 0 
+								&& strcmp(line_reg[3], line_ft[3]) == 0
+								&& strcmp(line_reg[4], line_ft[4]) == 0
+								&& strcmp(line_ft[3], line_ft[4]) == 0
+								&& (line_reg[5] && line_ft[5]) ? strcmp(line_reg[5], line_ft[5]) == 0 : line_reg[5] == NULL && line_ft[5] == NULL
+								&& (line_reg[6] && line_ft[6]) ? strcmp(line_reg[6], line_ft[6]) == 0 : line_reg[6] == NULL && line_ft[6] == NULL
+								&& (line_reg[7] && line_ft[7]) ? strcmp(line_reg[7], line_ft[7]) == 0 : line_reg[7] == NULL && line_ft[7] == NULL
+								&& (line_reg[8] && line_ft[8]) ? strcmp(line_reg[8], line_ft[8]) == 0 : line_reg[8] == NULL && line_ft[8] == NULL
+								&& (line_ft[5] && line_ft[7]) ? strcmp(line_ft[5], line_ft[7]) == 0 : line_ft[5] == NULL && line_ft[7] == NULL
+								&& (line_ft[6] && line_ft[8]) ? strcmp(line_ft[6], line_ft[8]) == 0 : line_ft[6] == NULL && line_ft[8] == NULL
+							  );
+						PRINT_RES(*idx_test, "FT - check order nodes LIST PUSH FRONT", OK, "\tFT, first node: %-15.15s - REG, first node: %-15.15s%s\tFT, last node: %-15.15s - REG, last node: %-15.15s%s\n\n", line_ft[6] ?  line_ft[6] : "NULL", line_reg[6] ?  line_reg[6] : "NULL", RESET, line_ft[5] ?  line_ft[5] : "NULL", line_reg[5] ?  line_reg[5] : "NULL", RESET);
+					}
+					ft_free_char_array(line_ft);
+					ft_free_char_array(line_reg);
+				}
 			}
 			break;
 		case TEST_FT_LIST_SIZE: {
@@ -200,6 +263,31 @@ int		compare_files(enum e_functions type_test, ...) {
 				check_version(*idx_test, "FT - check version LIST SORT", ft_lines[0], reg_lines[0]);
 				// __FILE__:__LINE__:idx_test:valeur_maillon:valeur_split:resultat_comparaison_ok(doit etre a 1 ici):
 				// __FILE__:__LINE__:idx_test:valeur_maillon:valeur_maillon_suivant:resultat_comparaison_liste_triée(doit etre a 1 ici ou -1 si
+				for (int i = 1; ft_lines[i] && reg_lines[i]; i++) {
+					char **line_ft = ft_split(ft_lines[i], ':');
+					char **line_reg = ft_split(reg_lines[i], ':');
+
+					int fields = 0;
+					for (int i = 0; line_ft[i]; i++, fields++);
+					(*idx_test)++;
+					if (ft_lines[i + 1]) {
+						assert(strcmp(line_reg[2], line_ft[2]) == 0 
+								&& (line_reg[3] && line_ft[3]) ? strcmp(line_reg[3], line_ft[3]) == 0 : line_reg[3] == NULL && line_ft[3] == NULL
+								&& (line_reg[4] && line_ft[4]) ? strcmp(line_reg[4], line_ft[4]) == 0 : line_reg[4] == NULL && line_ft[4] == NULL
+								&& (line_reg[5] && line_ft[5]) ? strcmp(line_ft[5], "1") == 0 && strcmp(line_reg[5], "1") == 0 : line_reg[5] == NULL && line_ft[5] == NULL
+							  );
+						PRINT_RES(*idx_test, "FT - check node LIST SORT", OK, "\tFT: [%-15.15s] - REG: [%-15.15s]%s\n", line_ft[3] ?  line_ft[3] : "NULL", line_reg[3] ?  line_reg[3] : "NULL", RESET);
+					} else { 
+						assert(strcmp(line_reg[2], line_ft[2]) == 0 
+								&& (line_reg[3] && line_ft[3]) ? strcmp(line_reg[3], line_ft[3]) == 0 : line_reg[3] == NULL && line_ft[3] == NULL
+								&& (line_reg[4] && line_ft[4]) ? strcmp(line_reg[4], line_ft[4]) == 0 : line_reg[4] == NULL && line_ft[4] == NULL
+								&& (line_reg[5] && line_ft[5]) ? strcmp(line_ft[5], "-1") == 0 && strcmp(line_reg[5], "-1") == 0 : line_reg[5] == NULL && line_ft[5] == NULL
+							  );
+						PRINT_RES(*idx_test, "FT - check node LIST SORT", OK, "\tFT: [%-15.15s] - REG: [%-15.15s]%s\n\n", line_ft[3] ?  line_ft[3] : "NULL", line_reg[3] ?  line_reg[3] : "NULL", RESET);
+					}
+					ft_free_char_array(line_ft);
+					ft_free_char_array(line_reg);
+				}
 			}
 			break;
 		case TEST_FT_LIST_REMOVE_IF: {
@@ -208,6 +296,23 @@ int		compare_files(enum e_functions type_test, ...) {
 				// __FILE__:__LINE__:remove_first:valeur_maillon_a_supprimer:taille_liste:
 				// __FILE__:__LINE__:idx_test:valeur_maillon_a_supprimer:taille_liste:
 				// __FILE__:__LINE__:final:taille_liste:
+				for (int i = 1; ft_lines[i] && reg_lines[i]; i++) {
+					char **line_ft = ft_split(ft_lines[i], ':');
+					char **line_reg = ft_split(reg_lines[i], ':');
+					if (ft_lines[i + 1]) {
+						(*idx_test)++;
+						assert(strcmp(line_reg[2], line_ft[2]) == 0 
+								&& (line_reg[3] && line_ft[3]) ? strcmp(line_reg[3], line_ft[3]) == 0 : line_reg[3] == NULL && line_ft[3] == NULL
+								&& (line_reg[4] && line_ft[4]) ? strcmp(line_reg[4], line_ft[4]) == 0 : line_reg[4] == NULL && line_ft[4] == NULL
+							  );
+						PRINT_RES(*idx_test, "FT - check version LIST REMOVE IF", OK, "\tFT: %-15.15s %3.3s - REG: %-15.15s %3.3s%s\n", line_ft[3] ?  line_ft[3] : "NULL", line_ft[4] ?  line_ft[4] : "0", line_reg[3] ?  line_reg[3] : "NULL", line_reg[4] ?  line_reg[4] : "0", RESET);
+					}
+					if (!ft_lines[i + 1]) {
+						printf("\n");
+					}
+					ft_free_char_array(line_ft);
+					ft_free_char_array(line_reg);
+				}
 			}
 			break;
 #endif

@@ -32,14 +32,16 @@ static t_bytes	read_write_file(int fd_in, int fd_out) {
 ** __FILE__:__LINE__:VERSION:VERSION_REAWRI:
 ** __FILE__:__LINE__:idx_test:errno:chaine_errno:error_read_ou_write:nb_bytes_lus:nb_bytes_ecrits:
 */
+
 void		tests_read_and_write(char *filename) {
 	int		fd_test = open(REAWRI_TEST_FILE, O_WRONLY|O_CREAT|O_TRUNC, S_IRWXU|S_IRWXG|S_IRWXO);
+	int		fd_outp = open(REAWRI_OUTP_FILE, O_WRONLY|O_CREAT|O_APPEND, S_IRWXU|S_IRWXG|S_IRWXO);
 	int		fd = open(filename, O_RDONLY);
 	if (fd_test == -1 || fd == -1)
 		exit(1);
 	// [0] => fd input		[1] => fd output (pour les tests on passe par un fichier pr output, mais ca fonctionne tres
 	//								bien sur stdout aussi
-	int		fds[][2] = {{fd, fd_test}, {177, fd_test}, {fd, 65536}};
+	int		fds[][2] = {{fd, fd_outp}, {177, fd_outp}, {fd, 65536}};
 	t_bytes	bytes = {0, 0, 0, 0};
 	
 	PRINT_TEST(fd_test, "%s%s:%s%s:\n", YELLOW_ALT, VERSION, VERSION_REAWRI, RESET);
@@ -51,4 +53,5 @@ void		tests_read_and_write(char *filename) {
 	}
 	close(fd);
 	close(fd_test);
+	close(fd_outp);
 }
