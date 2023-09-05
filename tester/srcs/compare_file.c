@@ -167,7 +167,7 @@ int		compare_files(enum e_functions type_test, ...) {
 								&& (line_reg[6] && line_ft[6]) ? strcmp(line_reg[6], line_ft[6]) == 0 : line_reg[6] == NULL && line_ft[6] == NULL
 								&& (line_reg[7] && line_ft[7]) ? strcmp(line_reg[7], line_ft[7]) == 0 : line_reg[7] == NULL && line_ft[7] == NULL
 							  );
-					PRINT_RES(*idx_test, "FT - check return READ & WRITE", OK, "\tFT: bytes: %7s ,error: %3s - REG: bytes: %7s, error: %3s\n", line_ft[6] ?  line_ft[6] : "NULL", line_ft[3] ?  line_ft[3] : "NULL", line_reg[6] ?  line_reg[6] : "NULL", line_reg[3] ?  line_reg[3] : "NULL");
+					PRINT_RES(*idx_test, "FT - check return READ & WRITE", OK, "\tFT: bytes: %7s, error: %3s - REG: bytes: %7s, error: %3s\n", line_ft[6] ?  line_ft[6] : "NULL", line_ft[3] ?  line_ft[3] : "NULL", line_reg[6] ?  line_reg[6] : "NULL", line_reg[3] ?  line_reg[3] : "NULL");
 					}
 					if (!ft_lines[i + 1]) {
 						printf("\n");
